@@ -95,9 +95,9 @@ update' msg model =
             { model | draggableRight = DnD.update msg model.draggableRight }
 
 
-wrapItem : (DnD.Msg Item -> Msg) -> Item -> Html Msg
-wrapItem cmdWrap item =
-    DnD.dragable cmdWrap item [] [ box item ]
+wrapDragable : (DnD.Msg Item -> Msg) -> (Item -> Html Msg) -> Item -> Html Msg
+wrapDragable cmdWrap view item =
+    DnD.dragable cmdWrap item [] [ view item ]
 
 
 (=>) =
@@ -120,7 +120,7 @@ view model =
                 )
             ]
             (List.map
-                (wrapItem DnDMsgRightColumn)
+                (wrapDragable DnDMsgRightColumn box)
                 model.left
             )
         , DnD.dropable DnDMsgRightColumn
@@ -136,7 +136,7 @@ view model =
                 )
             ]
             (List.map
-                (wrapItem DnDMsgLeftColumn)
+                (wrapDragable DnDMsgLeftColumn box)
                 model.right
             )
         , DnD.dragged
