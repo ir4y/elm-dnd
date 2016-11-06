@@ -5,7 +5,6 @@ import Html.Attributes exposing (style)
 import Html.Events exposing (onWithOptions, onMouseEnter, onMouseLeave)
 import Json.Decode as Json
 import Mouse
-import Debug
 
 
 type alias Dragabble a =
@@ -14,6 +13,13 @@ type alias Dragabble a =
         , position : Mouse.Position
         , atDropable : Bool
         }
+
+
+atDropable : Dragabble a -> Bool
+atDropable dragable =
+    dragable
+        |> Maybe.map .atDropable
+        |> Maybe.withDefault False
 
 
 type Msg a
@@ -70,25 +76,29 @@ update msg model =
                 |> Maybe.map (\d -> { d | atDropable = False })
 
 
-dragable : (Msg a -> m) -> a -> Html m -> Html m
-dragable wrap meta html =
+dragable : (Msg a -> m) -> a -> List (Html.Attribute m) -> List (Html m) -> Html m
+dragable wrap meta attrs html =
     div
-        [ onWithOptions "mousedown"
+        ([ onWithOptions "mousedown"
             { stopPropagation = True
             , preventDefault = True
             }
             (Json.map (wrap << DragStart meta) Mouse.position)
-        ]
-        [ html ]
+         ]
+            ++ attrs
+        )
+        html
 
 
-dropable : (Msg a -> m) -> Html m -> Html m
-dropable wrap html =
+dropable : (Msg a -> m) -> List (Html.Attribute m) -> List (Html m) -> Html m
+dropable wrap attrs html =
     div
-        [ onMouseEnter (wrap EnterDropable)
-        , onMouseLeave (wrap LeaveDropable)
-        ]
-        [ html ]
+        ([ onMouseEnter (wrap EnterDropable)
+         , onMouseLeave (wrap LeaveDropable)
+         ]
+            ++ attrs
+        )
+        html
 
 
 px : Int -> String
@@ -100,6 +110,7 @@ px number =
     (,)
 
 
+draggedStyle : Mouse.Position -> Html.Attribute m
 draggedStyle position =
     style
         [ "position" => "absolute"

@@ -1,10 +1,10 @@
 module Main exposing (..)
 
 import Html.App as Html
+import Html.Attributes exposing (style)
 import Html exposing (..)
 import Mouse
 import DnD
-import Debug
 
 
 main =
@@ -46,7 +46,7 @@ init : ( Model, Cmd.Cmd Msg )
 init =
     ( Model
         [ { id = 1, text = "hello" }, { id = 2, text = "world" } ]
-        [ { id = 3, text = "elm" }, { id = 4, text = "cool" } ]
+        [ { id = 3, text = "elm" }, { id = 4, text = "is" }, { id = 5, text = "cool" } ]
         Nothing
         Nothing
     , Cmd.none
@@ -66,16 +66,22 @@ update msg model =
 
 
 addToLeft model item =
-    { model | left = model.left ++ [ item ] }
+    { model
+        | left = model.left ++ [ item ]
+        , right = List.filter (\i -> i.id /= item.id) model.right
+    }
 
 
 addToRight model item =
-    { model | right = model.right ++ [ item ] }
+    { model
+        | right = model.right ++ [ item ]
+        , left = List.filter (\i -> i.id /= item.id) model.left
+    }
 
 
 update' : Msg -> Model -> Model
 update' msg model =
-    case Debug.log "msg" msg of
+    case msg of
         DropToLeft item ->
             addToLeft model item
 
@@ -91,27 +97,47 @@ update' msg model =
 
 wrapItem : (DnD.Msg Item -> Msg) -> Item -> Html Msg
 wrapItem cmdWrap item =
-    DnD.dragable cmdWrap item (box item)
+    DnD.dragable cmdWrap item [] [ box item ]
+
+
+(=>) =
+    (,)
 
 
 view : Model -> Html Msg
 view model =
-    div []
+    div [ style [ "width" => "100%" ] ]
         [ DnD.dropable DnDMsgLeftColumn
-            (div
-                []
-                (List.map
-                    (wrapItem DnDMsgRightColumn)
-                    model.left
+            [ style
+                ([ "width" => "50%"
+                 , "min-height" => "200px"
+                 , "float" => "left"
+                 ]
+                    ++ if DnD.atDropable model.draggableLeft then
+                        [ "background-color" => "cyan" ]
+                       else
+                        []
                 )
+            ]
+            (List.map
+                (wrapItem DnDMsgRightColumn)
+                model.left
             )
         , DnD.dropable DnDMsgRightColumn
-            (div
-                []
-                (List.map
-                    (wrapItem DnDMsgLeftColumn)
-                    model.right
+            [ style
+                ([ "width" => "50%"
+                 , "min-height" => "200px"
+                 , "float" => "right"
+                 ]
+                    ++ if DnD.atDropable model.draggableRight then
+                        [ "background-color" => "cyan" ]
+                       else
+                        []
                 )
+            ]
+            (List.map
+                (wrapItem DnDMsgLeftColumn)
+                model.right
             )
         , DnD.dragged
             model.draggableLeft
