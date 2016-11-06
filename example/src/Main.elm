@@ -24,14 +24,6 @@ subscriptions model =
         ]
 
 
-type RightColumn
-    = RightColumn
-
-
-type LeftColumn
-    = LeftColumn
-
-
 type alias Id =
     Int
 
@@ -45,8 +37,8 @@ type alias Item =
 type alias Model =
     { left : List Item
     , right : List Item
-    , draggableLeft : DnD.Dragabble LeftColumn Item
-    , draggableRight : DnD.Dragabble RightColumn Item
+    , draggableLeft : DnD.Dragabble Item
+    , draggableRight : DnD.Dragabble Item
     }
 
 
@@ -62,10 +54,10 @@ init =
 
 
 type Msg
-    = DropToRight RightColumn Item Mouse.Position
-    | DropToLeft LeftColumn Item Mouse.Position
-    | DnDMsgLeftColumn (DnD.Msg LeftColumn Item)
-    | DnDMsgRightColumn (DnD.Msg RightColumn Item)
+    = DropToRight Item
+    | DropToLeft Item
+    | DnDMsgLeftColumn (DnD.Msg Item)
+    | DnDMsgRightColumn (DnD.Msg Item)
 
 
 update : Msg -> Model -> ( Model, Cmd.Cmd Msg )
@@ -84,10 +76,10 @@ addToRight model item =
 update' : Msg -> Model -> Model
 update' msg model =
     case Debug.log "msg" msg of
-        DropToLeft _ item _ ->
+        DropToLeft item ->
             addToLeft model item
 
-        DropToRight _ item _ ->
+        DropToRight item ->
             addToRight model item
 
         DnDMsgLeftColumn msg ->
@@ -101,20 +93,18 @@ view : Model -> Html Msg
 view model =
     div []
         [ DnD.dropable DnDMsgLeftColumn
-            LeftColumn
             (div
                 []
                 (List.map
-                    (DnD.dragable DnDMsgRightColumn RightColumn box)
+                    (DnD.dragable DnDMsgRightColumn box)
                     model.left
                 )
             )
         , DnD.dropable DnDMsgRightColumn
-            RightColumn
             (div
                 []
                 (List.map
-                    (DnD.dragable DnDMsgLeftColumn LeftColumn box)
+                    (DnD.dragable DnDMsgLeftColumn box)
                     model.right
                 )
             )

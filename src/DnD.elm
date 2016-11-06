@@ -8,24 +8,23 @@ import Mouse
 import Debug
 
 
-type alias Dragabble a b =
+type alias Dragabble b =
     Maybe
-        { id : a
-        , meta : b
+        { meta : b
         , position : Mouse.Position
         , atDropable : Bool
         }
 
 
-type Msg a b
-    = DragStart a b Mouse.Position
+type Msg b
+    = DragStart b Mouse.Position
     | Dragging Mouse.Position
     | DragEnd Mouse.Position
     | EnterDropable
     | LeaveDropable
 
 
-subscriptions : (a -> b -> Mouse.Position -> c) -> (Msg a b -> c) -> Dragabble a b -> Sub c
+subscriptions : (b -> c) -> (Msg b -> c) -> Dragabble b -> Sub c
 subscriptions onValidDrop wrap model =
     case model of
         Nothing ->
@@ -35,7 +34,7 @@ subscriptions onValidDrop wrap model =
             if drag.atDropable then
                 Sub.batch
                     [ Mouse.moves (wrap << Dragging)
-                    , Mouse.ups (onValidDrop drag.id drag.meta)
+                    , Mouse.ups (\_ -> onValidDrop drag.meta)
                     , Mouse.ups (wrap << DragEnd)
                     ]
             else
@@ -45,13 +44,12 @@ subscriptions onValidDrop wrap model =
                     ]
 
 
-update : Msg a b -> Dragabble a b -> Dragabble a b
+update : Msg b -> Dragabble b -> Dragabble b
 update msg model =
     case msg of
-        DragStart id meta xy ->
+        DragStart meta xy ->
             Just
-                { id = id
-                , meta = meta
+                { meta = meta
                 , position = xy
                 , atDropable = False
                 }
@@ -72,20 +70,20 @@ update msg model =
                 |> Maybe.map (\d -> { d | atDropable = False })
 
 
-dragable : (Msg a b -> c) -> a -> (b -> Html c) -> b -> Html c
-dragable wrap id view meta =
+dragable : (Msg b -> c) -> (b -> Html c) -> b -> Html c
+dragable wrap view meta =
     div
         [ onWithOptions "mousedown"
             { stopPropagation = True
             , preventDefault = True
             }
-            (Json.map (wrap << DragStart id meta) Mouse.position)
+            (Json.map (wrap << DragStart meta) Mouse.position)
         ]
         [ view meta ]
 
 
-dropable : (Msg a b -> c) -> a -> Html c -> Html c
-dropable wrap id html =
+dropable : (Msg b -> c) -> Html c -> Html c
+dropable wrap html =
     div
         [ onMouseEnter (wrap EnterDropable)
         , onMouseLeave (wrap LeaveDropable)
@@ -110,7 +108,7 @@ draggedStyle position =
         ]
 
 
-dragged : Dragabble a b -> (b -> Html c) -> Html c
+dragged : Dragabble b -> (b -> Html c) -> Html c
 dragged model view =
     model
         |> Maybe.map (\{ meta, position } -> div [ draggedStyle position ] [ view meta ])
