@@ -8,23 +8,23 @@ import Mouse
 import Debug
 
 
-type alias Dragabble b =
+type alias Dragabble a =
     Maybe
-        { meta : b
+        { meta : a
         , position : Mouse.Position
         , atDropable : Bool
         }
 
 
-type Msg b
-    = DragStart b Mouse.Position
+type Msg a
+    = DragStart a Mouse.Position
     | Dragging Mouse.Position
     | DragEnd Mouse.Position
     | EnterDropable
     | LeaveDropable
 
 
-subscriptions : (b -> c) -> (Msg b -> c) -> Dragabble b -> Sub c
+subscriptions : (a -> m) -> (Msg a -> m) -> Dragabble a -> Sub m
 subscriptions onValidDrop wrap model =
     case model of
         Nothing ->
@@ -44,7 +44,7 @@ subscriptions onValidDrop wrap model =
                     ]
 
 
-update : Msg b -> Dragabble b -> Dragabble b
+update : Msg a -> Dragabble a -> Dragabble a
 update msg model =
     case msg of
         DragStart meta xy ->
@@ -70,7 +70,7 @@ update msg model =
                 |> Maybe.map (\d -> { d | atDropable = False })
 
 
-dragable : (Msg b -> c) -> (b -> Html c) -> b -> Html c
+dragable : (Msg a -> m) -> (a -> Html m) -> a -> Html m
 dragable wrap view meta =
     div
         [ onWithOptions "mousedown"
@@ -82,7 +82,7 @@ dragable wrap view meta =
         [ view meta ]
 
 
-dropable : (Msg b -> c) -> Html c -> Html c
+dropable : (Msg a -> m) -> Html m -> Html m
 dropable wrap html =
     div
         [ onMouseEnter (wrap EnterDropable)
@@ -108,7 +108,7 @@ draggedStyle position =
         ]
 
 
-dragged : Dragabble b -> (b -> Html c) -> Html c
+dragged : Dragabble a -> (a -> Html m) -> Html m
 dragged model view =
     model
         |> Maybe.map (\{ meta, position } -> div [ draggedStyle position ] [ view meta ])
