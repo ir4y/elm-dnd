@@ -1,15 +1,39 @@
 module DnD
     exposing
-        ( Dragabble
-        , atDropable
+        ( Draggable
+        , atDroppable
         , getMeta
         , Msg
         , subscriptions
         , update
-        , dragable
-        , dropable
+        , draggable
+        , droppable
         , dragged
         )
+
+{-| This library allow you to simple build grate ui with drag-and-drop.
+    It is astracting you from mouse events and other low level staff.
+    You can operate high livel things such as draggable and droppable areas.
+
+# Draggable type
+@docs Draggable
+
+#Helper to get information about draggable object
+@docs atDroppable, getMeta
+
+#Message type
+@docs Msg
+
+#Subscriptions
+@docs subscriptions
+
+#update function
+@docs update
+
+#viwe helpers
+@docs draggable, droppable, dragged
+
+-}
 
 import Html exposing (..)
 import Html.Attributes exposing (style)
@@ -18,43 +42,54 @@ import Json.Decode as Json
 import Mouse
 
 
-type alias Dragabble a =
+{-| Type of Draggable object it could be Nothing or Just object
+    It is parametrized by the type of meta information.
+-}
+type alias Draggable a =
     Maybe
         { meta : a
         , position : Mouse.Position
-        , atDropable : Bool
+        , atDroppable : Bool
         }
 
 
-atDropable : Dragabble a -> Bool
-atDropable dragable =
-    dragable
-        |> Maybe.map .atDropable
+{-| Helper that allow you to check if draggable object over valid droppable area
+-}
+atDroppable : Draggable a -> Bool
+atDroppable draggable =
+    draggable
+        |> Maybe.map .atDroppable
         |> Maybe.withDefault False
 
 
-getMeta : Dragabble a -> Maybe a
-getMeta dragable =
-    dragable
+{-| Helper that allow you to get meta information from draggable object
+-}
+getMeta : Draggable a -> Maybe a
+getMeta draggable =
+    draggable
         |> Maybe.map .meta
 
 
+{-| Inner messages, you should pass them to DnD.update at your update function
+-}
 type Msg a
     = DragStart a Mouse.Position
     | Dragging Mouse.Position
     | DragEnd Mouse.Position
-    | EnterDropable
-    | LeaveDropable
+    | EnterDroppable
+    | LeaveDroppable
 
 
-subscriptions : (a -> m) -> (Msg a -> m) -> Dragabble a -> Sub m
+{-| Subscriptions alow you to get drop event
+-}
+subscriptions : (a -> m) -> (Msg a -> m) -> Draggable a -> Sub m
 subscriptions onValidDrop wrap model =
     case model of
         Nothing ->
             Sub.none
 
         Just drag ->
-            if drag.atDropable then
+            if drag.atDroppable then
                 Sub.batch
                     [ Mouse.moves (wrap << Dragging)
                     , Mouse.ups (\_ -> onValidDrop drag.meta)
@@ -67,14 +102,16 @@ subscriptions onValidDrop wrap model =
                     ]
 
 
-update : Msg a -> Dragabble a -> Dragabble a
+{-| Update function handle all low level staff
+-}
+update : Msg a -> Draggable a -> Draggable a
 update msg model =
     case msg of
         DragStart meta xy ->
             Just
                 { meta = meta
                 , position = xy
-                , atDropable = False
+                , atDroppable = False
                 }
 
         Dragging xy ->
@@ -84,17 +121,19 @@ update msg model =
         DragEnd xy ->
             Nothing
 
-        EnterDropable ->
+        EnterDroppable ->
             model
-                |> Maybe.map (\d -> { d | atDropable = True })
+                |> Maybe.map (\d -> { d | atDroppable = True })
 
-        LeaveDropable ->
+        LeaveDroppable ->
             model
-                |> Maybe.map (\d -> { d | atDropable = False })
+                |> Maybe.map (\d -> { d | atDroppable = False })
 
 
-dragable : (Msg a -> m) -> a -> List (Html.Attribute m) -> List (Html m) -> Html m
-dragable wrap meta attrs html =
+{-| View wrapper for draggable object, you could drag object wraped by this helper
+-}
+draggable : (Msg a -> m) -> a -> List (Html.Attribute m) -> List (Html m) -> Html m
+draggable wrap meta attrs html =
     div
         ([ onWithOptions "mousedown"
             { stopPropagation = True
@@ -107,11 +146,14 @@ dragable wrap meta attrs html =
         html
 
 
-dropable : (Msg a -> m) -> List (Html.Attribute m) -> List (Html m) -> Html m
-dropable wrap attrs html =
+{-| View helper for droppable area, you could drop object to this area,
+    after that your ondrop command will fire
+-}
+droppable : (Msg a -> m) -> List (Html.Attribute m) -> List (Html m) -> Html m
+droppable wrap attrs html =
     div
-        ([ onMouseEnter (wrap EnterDropable)
-         , onMouseLeave (wrap LeaveDropable)
+        ([ onMouseEnter (wrap EnterDroppable)
+         , onMouseLeave (wrap LeaveDroppable)
          ]
             ++ attrs
         )
@@ -136,7 +178,9 @@ draggedStyle position =
         ]
 
 
-dragged : Dragabble a -> (a -> Html m) -> Html m
+{-| View helper for draggable object, it drows html of dragged object under your mouse in process of drag
+-}
+dragged : Draggable a -> (a -> Html m) -> Html m
 dragged model view =
     model
         |> Maybe.map (\{ meta, position } -> div [ draggedStyle position ] [ view meta ])

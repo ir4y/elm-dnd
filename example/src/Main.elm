@@ -3,7 +3,6 @@ module Main exposing (..)
 import Html.App as Html
 import Html.Attributes exposing (style)
 import Html exposing (..)
-import Mouse
 import DnD
 
 
@@ -37,8 +36,8 @@ type alias Item =
 type alias Model =
     { left : List Item
     , right : List Item
-    , draggableLeft : DnD.Dragabble Item
-    , draggableRight : DnD.Dragabble Item
+    , draggableLeft : DnD.Draggable Item
+    , draggableRight : DnD.Draggable Item
     }
 
 
@@ -95,9 +94,9 @@ update' msg model =
             { model | draggableRight = DnD.update msg model.draggableRight }
 
 
-wrapDragable : (DnD.Msg Item -> Msg) -> (Item -> Html Msg) -> Item -> Html Msg
-wrapDragable cmdWrap view item =
-    DnD.dragable cmdWrap item [] [ view item ]
+wrapDraggable : (DnD.Msg Item -> Msg) -> (Item -> Html Msg) -> Item -> Html Msg
+wrapDraggable cmdWrap view item =
+    DnD.draggable cmdWrap item [] [ view item ]
 
 
 (=>) =
@@ -107,36 +106,36 @@ wrapDragable cmdWrap view item =
 view : Model -> Html Msg
 view model =
     div [ style [ "width" => "100%" ] ]
-        [ DnD.dropable DnDMsgLeftColumn
+        [ DnD.droppable DnDMsgLeftColumn
             [ style
                 ([ "width" => "50%"
                  , "min-height" => "200px"
                  , "float" => "left"
                  ]
-                    ++ if DnD.atDropable model.draggableLeft then
+                    ++ if DnD.atDroppable model.draggableLeft then
                         [ "background-color" => "cyan" ]
                        else
                         []
                 )
             ]
             (List.map
-                (wrapDragable DnDMsgRightColumn box)
+                (wrapDraggable DnDMsgRightColumn box)
                 model.left
             )
-        , DnD.dropable DnDMsgRightColumn
+        , DnD.droppable DnDMsgRightColumn
             [ style
                 ([ "width" => "50%"
                  , "min-height" => "200px"
                  , "float" => "right"
                  ]
-                    ++ if DnD.atDropable model.draggableRight then
+                    ++ if DnD.atDroppable model.draggableRight then
                         [ "background-color" => "cyan" ]
                        else
                         []
                 )
             ]
             (List.map
-                (wrapDragable DnDMsgLeftColumn box)
+                (wrapDraggable DnDMsgLeftColumn box)
                 model.right
             )
         , DnD.dragged
