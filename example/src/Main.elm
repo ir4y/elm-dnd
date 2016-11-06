@@ -14,15 +14,12 @@ main =
         }
 
 
+subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
-
-
-
---Sub.batch
---[ DnD.subscriptions model.draggableLeft
---, DnD.subscriptions model.draggableRight
---]
+    Sub.batch
+        [ DnD.subscriptions DnDMsgLeftColumn model.draggableLeft
+        , DnD.subscriptions DnDMsgRightColumn model.draggableRight
+        ]
 
 
 type RightColumn
@@ -53,14 +50,20 @@ type alias Model =
 
 init : ( Model, Cmd.Cmd Msg )
 init =
-    ( Model [] [] Nothing Nothing, Cmd.none )
+    ( Model
+        [ { id = 1, text = "hello" }, { id = 2, text = "world" } ]
+        [ { id = 3, text = "elm" }, { id = 4, text = "cool" } ]
+        Nothing
+        Nothing
+    , Cmd.none
+    )
 
 
 type Msg
     = DropToRight Item
     | DropToLeft Item
-    | DnDMsgLeftColumn DnD.Msg
-    | DnDMsgRightColumn DnD.Msg
+    | DnDMsgLeftColumn (DnD.Msg LeftColumn Item)
+    | DnDMsgRightColumn (DnD.Msg RightColumn Item)
 
 
 update : Msg -> Model -> ( Model, Cmd.Cmd Msg )
@@ -99,7 +102,7 @@ view model =
             (div
                 []
                 (List.map
-                    (DnD.dragable RightColumn << box)
+                    (DnD.dragable DnDMsgLeftColumn LeftColumn box)
                     model.left
                 )
             )
@@ -107,7 +110,7 @@ view model =
             (div
                 []
                 (List.map
-                    (DnD.dragable LeftColumn << box)
+                    (DnD.dragable DnDMsgRightColumn RightColumn box)
                     model.right
                 )
             )
