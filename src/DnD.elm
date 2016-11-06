@@ -2,7 +2,7 @@ module DnD exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (style)
-import Html.Events exposing (onWithOptions)
+import Html.Events exposing (onWithOptions, onMouseEnter, onMouseLeave)
 import Json.Decode as Json
 import Mouse
 import Debug
@@ -13,6 +13,7 @@ type alias Dragabble a b =
         { id : a
         , meta : b
         , position : Mouse.Position
+        , atDropable : Bool
         }
 
 
@@ -20,26 +21,40 @@ type Msg a b
     = DragStart a b Mouse.Position
     | Dragging Mouse.Position
     | DragEnd Mouse.Position
+    | EnterDropable
+    | LeaveDropable
 
 
-subscriptions : (Msg a b -> c) -> Dragabble a b -> Sub c
-subscriptions wrap model =
+subscriptions : (a -> b -> Mouse.Position -> c) -> (Msg a b -> c) -> Dragabble a b -> Sub c
+subscriptions onValidDrop wrap model =
     case model of
         Nothing ->
             Sub.none
 
         Just drag ->
-            Sub.batch
-                [ Mouse.moves (wrap << Dragging)
-                , Mouse.ups (wrap << DragEnd)
-                ]
+            if drag.atDropable then
+                Sub.batch
+                    [ Mouse.moves (wrap << Dragging)
+                    , Mouse.ups (onValidDrop drag.id drag.meta)
+                    , Mouse.ups (wrap << DragEnd)
+                    ]
+            else
+                Sub.batch
+                    [ Mouse.moves (wrap << Dragging)
+                    , Mouse.ups (wrap << DragEnd)
+                    ]
 
 
 update : Msg a b -> Dragabble a b -> Dragabble a b
 update msg model =
-    case Debug.log "msg" msg of
+    case msg of
         DragStart id meta xy ->
-            Just { id = id, meta = meta, position = xy }
+            Just
+                { id = id
+                , meta = meta
+                , position = xy
+                , atDropable = False
+                }
 
         Dragging xy ->
             model
@@ -47,6 +62,14 @@ update msg model =
 
         DragEnd xy ->
             Nothing
+
+        EnterDropable ->
+            model
+                |> Maybe.map (\d -> { d | atDropable = True })
+
+        LeaveDropable ->
+            model
+                |> Maybe.map (\d -> { d | atDropable = False })
 
 
 dragable : (Msg a b -> c) -> a -> (b -> Html c) -> b -> Html c
@@ -61,9 +84,13 @@ dragable wrap id view meta =
         [ view meta ]
 
 
-dropable : a -> Html c -> Html c
-dropable id html =
-    div [] [ html ]
+dropable : (Msg a b -> c) -> a -> Html c -> Html c
+dropable wrap id html =
+    div
+        [ onMouseEnter (wrap EnterDropable)
+        , onMouseLeave (wrap LeaveDropable)
+        ]
+        [ html ]
 
 
 px : Int -> String
@@ -78,8 +105,8 @@ px number =
 draggedStyle position =
     style
         [ "position" => "absolute"
-        , "left" => px position.x
-        , "top" => px position.y
+        , "left" => px (position.x + 10)
+        , "top" => px (position.y + 10)
         ]
 
 

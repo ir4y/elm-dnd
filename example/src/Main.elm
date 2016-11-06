@@ -2,7 +2,9 @@ module Main exposing (..)
 
 import Html.App as Html
 import Html exposing (..)
+import Mouse
 import DnD
+import Debug
 
 
 main =
@@ -17,8 +19,8 @@ main =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ DnD.subscriptions DnDMsgLeftColumn model.draggableLeft
-        , DnD.subscriptions DnDMsgRightColumn model.draggableRight
+        [ DnD.subscriptions DropToLeft DnDMsgLeftColumn model.draggableLeft
+        , DnD.subscriptions DropToRight DnDMsgRightColumn model.draggableRight
         ]
 
 
@@ -60,8 +62,8 @@ init =
 
 
 type Msg
-    = DropToRight Item
-    | DropToLeft Item
+    = DropToRight RightColumn Item Mouse.Position
+    | DropToLeft LeftColumn Item Mouse.Position
     | DnDMsgLeftColumn (DnD.Msg LeftColumn Item)
     | DnDMsgRightColumn (DnD.Msg RightColumn Item)
 
@@ -76,16 +78,16 @@ addToLeft model item =
 
 
 addToRight model item =
-    { model | left = model.right ++ [ item ] }
+    { model | right = model.right ++ [ item ] }
 
 
 update' : Msg -> Model -> Model
 update' msg model =
-    case msg of
-        DropToLeft item ->
+    case Debug.log "msg" msg of
+        DropToLeft _ item _ ->
             addToLeft model item
 
-        DropToRight item ->
+        DropToRight _ item _ ->
             addToRight model item
 
         DnDMsgLeftColumn msg ->
@@ -98,19 +100,21 @@ update' msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ DnD.dropable LeftColumn
-            (div
-                []
-                (List.map
-                    (DnD.dragable DnDMsgLeftColumn LeftColumn box)
-                    model.left
-                )
-            )
-        , DnD.dropable RightColumn
+        [ DnD.dropable DnDMsgLeftColumn
+            LeftColumn
             (div
                 []
                 (List.map
                     (DnD.dragable DnDMsgRightColumn RightColumn box)
+                    model.left
+                )
+            )
+        , DnD.dropable DnDMsgRightColumn
+            RightColumn
+            (div
+                []
+                (List.map
+                    (DnD.dragable DnDMsgLeftColumn LeftColumn box)
                     model.right
                 )
             )
