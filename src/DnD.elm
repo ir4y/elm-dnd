@@ -1,4 +1,15 @@
-module DnD exposing (..)
+module DnD
+    exposing
+        ( Dragabble
+        , atDropable
+        , getMeta
+        , Msg
+        , subscriptions
+        , update
+        , dragable
+        , dropable
+        , dragged
+        )
 
 import Html exposing (..)
 import Html.Attributes exposing (style)
@@ -20,6 +31,12 @@ atDropable dragable =
     dragable
         |> Maybe.map .atDropable
         |> Maybe.withDefault False
+
+
+getMeta : Dragabble a -> Maybe a
+getMeta dragable =
+    dragable
+        |> Maybe.map .meta
 
 
 type Msg a
