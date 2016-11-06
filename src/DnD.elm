@@ -70,8 +70,8 @@ update msg model =
                 |> Maybe.map (\d -> { d | atDropable = False })
 
 
-dragable : (Msg a -> m) -> (a -> Html m) -> a -> Html m
-dragable wrap view meta =
+dragable : (Msg a -> m) -> a -> Html m -> Html m
+dragable wrap meta html =
     div
         [ onWithOptions "mousedown"
             { stopPropagation = True
@@ -79,7 +79,7 @@ dragable wrap view meta =
             }
             (Json.map (wrap << DragStart meta) Mouse.position)
         ]
-        [ view meta ]
+        [ html ]
 
 
 dropable : (Msg a -> m) -> Html m -> Html m

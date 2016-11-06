@@ -89,6 +89,11 @@ update' msg model =
             { model | draggableRight = DnD.update msg model.draggableRight }
 
 
+wrapItem : (DnD.Msg Item -> Msg) -> Item -> Html Msg
+wrapItem cmdWrap item =
+    DnD.dragable cmdWrap item (box item)
+
+
 view : Model -> Html Msg
 view model =
     div []
@@ -96,7 +101,7 @@ view model =
             (div
                 []
                 (List.map
-                    (DnD.dragable DnDMsgRightColumn box)
+                    (wrapItem DnDMsgRightColumn)
                     model.left
                 )
             )
@@ -104,7 +109,7 @@ view model =
             (div
                 []
                 (List.map
-                    (DnD.dragable DnDMsgLeftColumn box)
+                    (wrapItem DnDMsgLeftColumn)
                     model.right
                 )
             )
