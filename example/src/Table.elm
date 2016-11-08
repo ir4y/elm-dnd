@@ -18,8 +18,8 @@ main =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ DnD.subscriptions DropToLeft DnDMsgLeftColumn model.draggableLeft
-        , DnD.subscriptions DropToRight DnDMsgRightColumn model.draggableRight
+        [ DnD.subscriptions DnDMsgLeftColumn model.draggableLeft
+        , DnD.subscriptions DnDMsgRightColumn model.draggableRight
         ]
 
 
@@ -36,12 +36,12 @@ type alias Item =
 type alias Model =
     { left : List Item
     , right : List Item
-    , draggableLeft : DnD.Draggable Item
-    , draggableRight : DnD.Draggable Item
+    , draggableLeft : DnD.Draggable Item Msg
+    , draggableRight : DnD.Draggable Item Msg
     }
 
 
-init : ( Model, Cmd.Cmd Msg )
+init : ( Model, Cmd Msg )
 init =
     ( Model
         [ { id = 1, text = "hello" }, { id = 2, text = "world" } ]
@@ -55,11 +55,11 @@ init =
 type Msg
     = DropToRight Item
     | DropToLeft Item
-    | DnDMsgLeftColumn (DnD.Msg Item)
-    | DnDMsgRightColumn (DnD.Msg Item)
+    | DnDMsgLeftColumn (DnD.Msg Item Msg)
+    | DnDMsgRightColumn (DnD.Msg Item Msg)
 
 
-update : Msg -> Model -> ( Model, Cmd.Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     ( update' msg model, Cmd.none )
 
@@ -94,7 +94,7 @@ update' msg model =
             { model | draggableRight = DnD.update msg model.draggableRight }
 
 
-wrapDraggable : (DnD.Msg Item -> Msg) -> (Item -> Html Msg) -> Item -> Html Msg
+wrapDraggable : (DnD.Msg Item Msg -> Msg) -> (Item -> Html Msg) -> Item -> Html Msg
 wrapDraggable cmdWrap view item =
     DnD.draggable cmdWrap item [] [ view item ]
 
@@ -107,32 +107,38 @@ view : Model -> Html Msg
 view model =
     div [ style [ "width" => "100%" ] ]
         [ DnD.droppable DnDMsgLeftColumn
+            DropToLeft
             [ style
-                ([ "width" => "50%"
-                 , "min-height" => "200px"
-                 , "float" => "left"
-                 ]
-                    ++ if DnD.atDroppable model.draggableLeft then
-                        [ "background-color" => "cyan" ]
-                       else
-                        []
-                )
+                [ "width" => "50%"
+                , "min-height" => "200px"
+                , "float" => "left"
+                , "background-color"
+                    => case DnD.atDroppable model.draggableLeft of
+                        Just (DropToLeft _) ->
+                            "cyan"
+
+                        _ ->
+                            "white"
+                ]
             ]
             (List.map
                 (wrapDraggable DnDMsgRightColumn box)
                 model.left
             )
         , DnD.droppable DnDMsgRightColumn
+            DropToRight
             [ style
-                ([ "width" => "50%"
-                 , "min-height" => "200px"
-                 , "float" => "right"
-                 ]
-                    ++ if DnD.atDroppable model.draggableRight then
-                        [ "background-color" => "cyan" ]
-                       else
-                        []
-                )
+                [ "width" => "50%"
+                , "min-height" => "200px"
+                , "float" => "right"
+                , "background-color"
+                    => case DnD.atDroppable model.draggableRight of
+                        Just (DropToRight _) ->
+                            "cyan"
+
+                        _ ->
+                            "white"
+                ]
             ]
             (List.map
                 (wrapDraggable DnDMsgLeftColumn box)

@@ -1,5 +1,5 @@
 {
-    "version": "1.0.0",
+    "version": "1.1.0",
     "summary": "Reusable high level drag-and-drop library for elm",
     "repository": "https://github.com/ir4y/elm-dnd.git",
     "license": "MIT",

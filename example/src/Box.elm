@@ -2,6 +2,7 @@ module Box exposing (..)
 
 import Html.App as Html
 import Html.Attributes exposing (style)
+import Html.Events exposing (onWithOptions, onMouseEnter, onMouseLeave)
 import Html exposing (..)
 import DnD
 
@@ -18,12 +19,12 @@ main =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ DnD.subscriptions Dropped DnDMsg model.draggable
+        [ DnD.subscriptions DnDMsg model.draggable
         ]
 
 
 type alias Model =
-    { draggable : DnD.Draggable Int
+    { draggable : DnD.Draggable Int Msg
     , count : Int
     }
 
@@ -35,7 +36,8 @@ init =
 
 type Msg
     = Dropped Int
-    | DnDMsg (DnD.Msg Int)
+    | DnDMsg (DnD.Msg Int Msg)
+    | EnterDroppable
 
 
 update : Msg -> Model -> ( Model, Cmd.Cmd Msg )
@@ -46,6 +48,9 @@ update msg model =
 update' : Msg -> Model -> Model
 update' msg model =
     case msg of
+        EnterDroppable ->
+            { model | count = model.count + 1 }
+
         Dropped item ->
             { model | count = item + 1 }
 
@@ -70,17 +75,21 @@ view model =
             ]
             [ DnD.draggable DnDMsg (model.count + 1) [] [ dragged model.count ] ]
         , DnD.droppable DnDMsg
+            Dropped
             [ style
                 [ "width" => "49%"
                 , "min-height" => "200px"
                 , "float" => "right"
                 , "border" => "1px solid black"
                 , "background-color"
-                    => if DnD.atDroppable model.draggable then
-                        "cyan"
-                       else
-                        "white"
+                    => case DnD.atDroppable model.draggable of
+                        Just (Dropped _) ->
+                            "cyan"
+
+                        _ ->
+                            "white"
                 ]
+            , onMouseEnter EnterDroppable
             ]
             []
         , DnD.dragged
