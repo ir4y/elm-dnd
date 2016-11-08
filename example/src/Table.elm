@@ -1,4 +1,4 @@
-module Main exposing (..)
+module Table exposing (..)
 
 import Html.App as Html
 import Html.Attributes exposing (style)
