@@ -92,7 +92,7 @@ subscriptions onValidDrop wrap model =
             if drag.atDroppable then
                 Sub.batch
                     [ Mouse.moves (wrap << Dragging)
-                    , Mouse.ups (\_ -> onValidDrop drag.meta)
+                    , Mouse.ups <| always <| onValidDrop drag.meta
                     , Mouse.ups (wrap << DragEnd)
                     ]
             else
