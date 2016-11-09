@@ -2,7 +2,6 @@ module Box exposing (..)
 
 import Html.App as Html
 import Html.Attributes exposing (style)
-import Html.Events exposing (onWithOptions, onMouseEnter, onMouseLeave)
 import Html exposing (..)
 import DnD
 
@@ -31,13 +30,12 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model Nothing 0, Cmd.none )
+    ( Model DnD.init 0, Cmd.none )
 
 
 type Msg
     = Dropped Int
     | DnDMsg (DnD.Msg Int Msg)
-    | EnterDroppable
 
 
 update : Msg -> Model -> ( Model, Cmd.Cmd Msg )
@@ -48,9 +46,6 @@ update msg model =
 update' : Msg -> Model -> Model
 update' msg model =
     case msg of
-        EnterDroppable ->
-            { model | count = model.count + 1 }
-
         Dropped item ->
             { model | count = item + 1 }
 
@@ -89,7 +84,6 @@ view model =
                         _ ->
                             "white"
                 ]
-            , onMouseEnter EnterDroppable
             ]
             []
         , DnD.dragged
