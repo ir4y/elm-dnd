@@ -47,26 +47,28 @@ import Mouse
     It is parametrized by the type of meta information and
     message constructor that will be invoked on Drop event
 -}
-type alias Draggable a m =
-    Maybe
-        { meta : a
-        , position : Mouse.Position
-        , atDroppable : Maybe (a -> m)
-        }
+type Draggable a m
+    = Draggable
+        (Maybe
+            { meta : a
+            , position : Mouse.Position
+            , atDroppable : Maybe (a -> m)
+            }
+        )
 
 
 {-| Constructor for default Draggable Model
 -}
 init : Draggable a m
 init =
-    Nothing
+    Draggable Nothing
 
 
 {-| Helper that return you a message that will be invoked
     if object will be dropped at current area
 -}
 atDroppable : Draggable a m -> Maybe m
-atDroppable draggable =
+atDroppable (Draggable draggable) =
     draggable
         `Maybe.andThen`
             (\d ->
@@ -78,7 +80,7 @@ atDroppable draggable =
 {-| Helper that allow you to get meta information from draggable object
 -}
 getMeta : Draggable a m -> Maybe a
-getMeta draggable =
+getMeta (Draggable draggable) =
     draggable
         |> Maybe.map .meta
 
@@ -96,7 +98,7 @@ type Msg a m
 {-| Subscriptions alow you to get drop event
 -}
 subscriptions : (Msg a m -> m) -> Draggable a m -> Sub m
-subscriptions wrap model =
+subscriptions wrap (Draggable model) =
     case model of
         Nothing ->
             Sub.none
@@ -120,29 +122,33 @@ subscriptions wrap model =
 {-| Update function handle all low level staff
 -}
 update : Msg a m -> Draggable a m -> Draggable a m
-update msg model =
+update msg (Draggable model) =
     case msg of
         DragStart meta xy ->
-            Just
-                { meta = meta
-                , position = xy
-                , atDroppable = Nothing
-                }
+            Draggable <|
+                Just
+                    { meta = meta
+                    , position = xy
+                    , atDroppable = Nothing
+                    }
 
         Dragging xy ->
             model
                 |> Maybe.map (\d -> { d | position = xy })
+                |> Draggable
 
         DragEnd xy ->
-            Nothing
+            Draggable Nothing
 
         EnterDroppable onValidDrop ->
             model
                 |> Maybe.map (\d -> { d | atDroppable = Just onValidDrop })
+                |> Draggable
 
         LeaveDroppable ->
             model
                 |> Maybe.map (\d -> { d | atDroppable = Nothing })
+                |> Draggable
 
 
 {-| View wrapper for draggable object, you could drag object wraped by this helper
@@ -196,7 +202,7 @@ draggedStyle position =
 {-| View helper for draggable object, it drows html of dragged object under your mouse in process of drag
 -}
 dragged : Draggable a m -> (a -> Html m) -> Html m
-dragged model view =
+dragged (Draggable model) view =
     model
         |> Maybe.map (\{ meta, position } -> div [ draggedStyle position ] [ view meta ])
         |> Maybe.withDefault (text "")

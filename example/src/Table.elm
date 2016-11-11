@@ -46,8 +46,8 @@ init =
     ( Model
         [ { id = 1, text = "hello" }, { id = 2, text = "world" } ]
         [ { id = 3, text = "elm" }, { id = 4, text = "is" }, { id = 5, text = "cool" } ]
-        Nothing
-        Nothing
+        DnD.init
+        DnD.init
     , Cmd.none
     )
 
