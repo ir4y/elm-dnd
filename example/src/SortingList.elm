@@ -164,7 +164,7 @@ view model =
                 |> List.indexedMap
                     (\index item ->
                         [ droppable index model.draggable
-                        , DnD.draggable DnDMsg ( index, item.repr ) [] [ box "solid" item.repr ]
+                        , DnD.draggable ( index, item.repr ) DnDMsg [] [ box "solid" item.repr ]
                         ]
                     )
                 |> List.concat
@@ -187,8 +187,9 @@ view model =
 
 
 droppable index draggableModel =
-    DnD.droppable DnDMsg
+    DnD.droppable
         (Dropped index)
+        DnDMsg
         [ style
             [ "width" => "40px"
             , "height" => "20px"

@@ -68,9 +68,9 @@ view model =
                 , "border" => "1px solid black"
                 ]
             ]
-            [ DnD.draggable DnDMsg (model.count + 1) [] [ dragged model.count ] ]
-        , DnD.droppable DnDMsg
-            Dropped
+            [ DnD.draggable (model.count + 1) DnDMsg [] [ dragged model.count ] ]
+        , DnD.droppable Dropped
+            DnDMsg
             [ style
                 [ "width" => "49%"
                 , "min-height" => "200px"

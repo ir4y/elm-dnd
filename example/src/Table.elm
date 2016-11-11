@@ -95,10 +95,11 @@ update' msg model =
 
 
 wrapDraggable : (DnD.Msg Item Msg -> Msg) -> (Item -> Html Msg) -> Item -> Html Msg
-wrapDraggable cmdWrap view item =
-    DnD.draggable cmdWrap item [] [ view item ]
+wrapDraggable msgWrap view item =
+    DnD.draggable item msgWrap [] [ view item ]
 
 
+(=>) : a -> b -> ( a, b )
 (=>) =
     (,)
 
@@ -106,8 +107,8 @@ wrapDraggable cmdWrap view item =
 view : Model -> Html Msg
 view model =
     div [ style [ "width" => "100%" ] ]
-        [ DnD.droppable DnDMsgLeftColumn
-            DropToLeft
+        [ DnD.droppable DropToLeft
+            DnDMsgLeftColumn
             [ style
                 [ "width" => "50%"
                 , "min-height" => "200px"
@@ -125,8 +126,8 @@ view model =
                 (wrapDraggable DnDMsgRightColumn box)
                 model.left
             )
-        , DnD.droppable DnDMsgRightColumn
-            DropToRight
+        , DnD.droppable DropToRight
+            DnDMsgRightColumn
             [ style
                 [ "width" => "50%"
                 , "min-height" => "200px"

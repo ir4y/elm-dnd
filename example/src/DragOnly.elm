@@ -1,4 +1,4 @@
-module Box exposing (..)
+module DragOnly exposing (..)
 
 import Html.App as Html
 import Html.Attributes exposing (style)
@@ -43,7 +43,7 @@ update (DnDMsg msg) model =
 view : Model -> Html Msg
 view model =
     div []
-        [ DnD.draggable DnDMsg "drag-n-drop" [] [ text "hello" ]
+        [ DnD.draggable "drag-n-drop" DnDMsg [] [ text "hello" ]
         , DnD.dragged
             model
             dragged
