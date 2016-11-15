@@ -93,7 +93,7 @@ type Msg
     | DnDMsg (DnD.Msg String Msg)
 
 
-dnd = DnD.init DnDWrapper
+dnd = DnD.init DnDMsg
 type alias Model =
     { ...
     , draggable = dnd.model
