@@ -12,7 +12,7 @@ so if you drop element over that element, the message `OnDrop meta` will be fire
 At first you need to initialize draggable state and function.  
 `DnD.init` helper returns initModel, subscription, draggable and droppable functions for your message wrapper.  
 
-```
+```elm
 type Msg
     = NoOp
     ..
@@ -28,7 +28,7 @@ type alias Model =
 ```
 
 Subscriptions alow you to get drop event.
-```
+```elm
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
@@ -36,7 +36,7 @@ subscriptions model =
         ]
 ```
 View wrapper for draggable object, you could drag object wraped by this helper
-```
+```elm
 draggable
     : (Html.Attribute Msg)
     -> List (Html Msg)
@@ -45,7 +45,7 @@ draggable =  dnd.draggable meta
 ```
 View helper for droppable area, you could drop object to this area,
 after that your on `Drop meta` message will be invoked.
-```
+```elm
 droppable
   : (Html.Attribute Msg)
   -> List (Html Msg)
