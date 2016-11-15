@@ -1,6 +1,6 @@
 module Table exposing (..)
 
-import Html.App as Html
+import Html
 import Html.Attributes exposing (style)
 import Html exposing (..)
 import DnD
@@ -61,7 +61,7 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( update' msg model, Cmd.none )
+    ( update_ msg model, Cmd.none )
 
 
 addToLeft model item =
@@ -78,8 +78,8 @@ addToRight model item =
     }
 
 
-update' : Msg -> Model -> Model
-update' msg model =
+update_ : Msg -> Model -> Model
+update_ msg model =
     case msg of
         DropToLeft item ->
             addToLeft model item

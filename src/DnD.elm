@@ -133,7 +133,7 @@ DnD.droppable Dropped
 atDroppable : Draggable a m -> Maybe m
 atDroppable (Draggable draggable) =
     draggable
-        `Maybe.andThen`
+        |> Maybe.andThen
             (\d ->
                 d.atDroppable
                     |> Maybe.map (\f -> f d.meta)

@@ -1,6 +1,6 @@
 module DragOnly exposing (..)
 
-import Html.App as Html
+import Html
 import Html.Attributes exposing (style)
 import Html exposing (..)
 import DnD

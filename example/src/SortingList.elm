@@ -1,6 +1,6 @@
 module SortingList exposing (..)
 
-import Html.App as Html
+import Html
 import Html.Attributes exposing (style)
 import Html exposing (..)
 import DnD
@@ -131,11 +131,11 @@ moveRight items from to =
 
 update : Msg -> Model -> ( Model, Cmd.Cmd Msg )
 update msg model =
-    ( update' msg model, Cmd.none )
+    ( update_ msg model, Cmd.none )
 
 
-update' : Msg -> Model -> Model
-update' msg model =
+update_ : Msg -> Model -> Model
+update_ msg model =
     case msg of
         Dropped to ( from, _ ) ->
             { model | items = move model.items from to }
@@ -181,7 +181,7 @@ view model =
                         ]
                    , DnD.dragged
                         model.draggable
-                        (box "dotted" << snd)
+                        (box "dotted" << Tuple.second)
                    ]
             )
 
