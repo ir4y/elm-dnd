@@ -15,11 +15,19 @@ main =
         }
 
 
+dndLeft =
+    DnD.init DnDMsgLeftColumn
+
+
+dndRigth =
+    DnD.init DnDMsgRightColumn
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ DnD.subscriptions DnDMsgLeftColumn model.draggableLeft
-        , DnD.subscriptions DnDMsgRightColumn model.draggableRight
+        [ dndLeft.subscriptions model.draggableLeft
+        , dndRigth.subscriptions model.draggableRight
         ]
 
 
@@ -46,8 +54,8 @@ init =
     ( Model
         [ { id = 1, text = "hello" }, { id = 2, text = "world" } ]
         [ { id = 3, text = "elm" }, { id = 4, text = "is" }, { id = 5, text = "cool" } ]
-        DnD.init
-        DnD.init
+        dndLeft.model
+        dndRigth.model
     , Cmd.none
     )
 
@@ -94,11 +102,6 @@ update_ msg model =
             { model | draggableRight = DnD.update msg model.draggableRight }
 
 
-wrapDraggable : (DnD.Msg Item Msg -> Msg) -> (Item -> Html Msg) -> Item -> Html Msg
-wrapDraggable msgWrap view item =
-    DnD.draggable item msgWrap [] [ view item ]
-
-
 (=>) : a -> b -> ( a, b )
 (=>) =
     (,)
@@ -107,8 +110,7 @@ wrapDraggable msgWrap view item =
 view : Model -> Html Msg
 view model =
     div [ style [ "width" => "100%" ] ]
-        [ DnD.droppable DropToLeft
-            DnDMsgLeftColumn
+        [ dndLeft.droppable DropToLeft
             [ style
                 [ "width" => "50%"
                 , "min-height" => "200px"
@@ -123,11 +125,10 @@ view model =
                 ]
             ]
             (List.map
-                (wrapDraggable DnDMsgRightColumn box)
+                (\item -> dndRigth.draggable item [] [ box item ])
                 model.left
             )
-        , DnD.droppable DropToRight
-            DnDMsgRightColumn
+        , dndRigth.droppable DropToRight
             [ style
                 [ "width" => "50%"
                 , "min-height" => "200px"
@@ -142,7 +143,7 @@ view model =
                 ]
             ]
             (List.map
-                (wrapDraggable DnDMsgLeftColumn box)
+                (\item -> dndLeft.draggable item [] [ box item ])
                 model.right
             )
         , DnD.dragged

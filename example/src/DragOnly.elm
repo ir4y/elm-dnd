@@ -15,10 +15,14 @@ main =
         }
 
 
+dnd =
+    DnD.init DnDMsg
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ DnD.subscriptions DnDMsg model
+        [ dnd.subscriptions model
         ]
 
 
@@ -28,7 +32,7 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( DnD.init, Cmd.none )
+    ( dnd.model, Cmd.none )
 
 
 type Msg
@@ -43,7 +47,7 @@ update (DnDMsg msg) model =
 view : Model -> Html Msg
 view model =
     div []
-        [ DnD.draggable "drag-n-drop" DnDMsg [] [ text "hello" ]
+        [ dnd.draggable "drag-n-drop" [] [ text "hello" ]
         , DnD.dragged
             model
             dragged

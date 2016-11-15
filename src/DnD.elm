@@ -2,13 +2,11 @@ module DnD
     exposing
         ( Draggable
         , Msg
+        , DraggableInit
         , atDroppable
         , getMeta
         , init
-        , subscriptions
         , update
-        , draggable
-        , droppable
         , dragged
         )
 
@@ -22,34 +20,10 @@ The dragget object will get some meta information.
 Also, you could wrap another element with `droppable OnDrop`,
 so if you drop element over that element, the message `OnDrop meta` will be fired.
 
-Actually, we need a message wrapper so the actual signature will be
-`droppable OnDrop DnDMsg` and `OnDrop meta DnDMsg`.
-this functions will generate a view function which will render `div` tag with handlers for drag and drop mouse events.
-
-So finally API will be
-```
-droppable
-    : (Html.Attribute Msg)
-    -> List (Html Msg)
-    -> Html Msg
-droppable = DnD.droppable Dropped DnDMsg
-
-draggable
-    : (Html.Attribute Msg)
-    -> List (Html Msg)
-    -> Html Msg
-draggable =  DnD.draggable meta DnDMsg
-
-
-view = div []
-    [ draggable [class "drag-me"] ["drag me please"]
-    , droppable [class "drop-here"] []
-    ]
-```
 You can find examples [here](https://github.com/ir4y/elm-dnd/tree/master/example/src).
 
-# Draggable type and its constructor
-@docs Draggable, init
+# Draggable types and its constructor
+@docs DraggableInit, Draggable, init
 
 # Helpers to get information about draggable object
 @docs atDroppable, getMeta
@@ -57,14 +31,11 @@ You can find examples [here](https://github.com/ir4y/elm-dnd/tree/master/example
 # Message type
 @docs Msg
 
-# Subscriptions
-@docs subscriptions
-
 # Update function
 @docs update
 
-# View helpers
-@docs draggable, droppable, dragged
+# View helper
+@docs dragged
 
 -}
 
@@ -98,16 +69,70 @@ type Draggable a m
 
 
 {-|
-Constructor for Draggable to use inside your init method or where you else want.
+The type of init function result.
+See `init` for more information.
+-}
+type alias DraggableInit a m =
+    { model : Draggable a m
+    , subscriptions : Draggable a m -> Sub m
+    , draggable : a -> List (Html.Attribute m) -> List (Html m) -> Html m
+    , droppable : (a -> m) -> List (Html.Attribute m) -> List (Html m) -> Html m
+    }
+
+
+{-|
+Initialize Draggable state and function
+This helper returns initModel, subscription, draggable and droppable functions
+for your message wrapper.
+
 ```
-init : ( Model, Cmd Msg )
-init =
-    ( Model DnD.init 0, Cmd.none )
+type Msg
+    = NoOp
+    ..
+    | Dropped String
+    | DnDMsg (DnD.Msg String Msg)
+
+
+dnd = DnD.init DnDWrapper
+type alias Model =
+    { ...
+    , draggable = dnd.model
+    }
+```
+
+Subscriptions alow you to get drop event.
+```
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ dnd.subscriptions model.draggable
+        ]
+```
+View wrapper for draggable object, you could drag object wraped by this helper
+```
+draggable
+    : (Html.Attribute Msg)
+    -> List (Html Msg)
+    -> Html Msg
+draggable =  dnd.draggable meta
+```
+View helper for droppable area, you could drop object to this area,
+after that your on `Drop meta` message will be invoked.
+```
+droppable
+  : (Html.Attribute Msg)
+  -> List (Html Msg)
+  -> Html Msg
+droppable = dnd.droppable Dropped
 ```
 -}
-init : Draggable a m
-init =
-    Draggable Nothing
+init : (Msg a m -> m) -> DraggableInit a m
+init wrap =
+    { model = Draggable Nothing
+    , subscriptions = subscriptions wrap
+    , draggable = draggable wrap
+    , droppable = droppable wrap
+    }
 
 
 {-|
@@ -173,16 +198,6 @@ type Msg a m
     | LeaveDroppable
 
 
-{-|
-Subscriptions alow you to get drop event.
-```
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.batch
-        [ DnD.subscriptions DnDMsg model.draggable
-        ]
-```
--}
 subscriptions : (Msg a m -> m) -> Draggable a m -> Sub m
 subscriptions wrap (Draggable model) =
     case model of
@@ -249,21 +264,8 @@ update msg (Draggable model) =
                 |> Draggable
 
 
-{-|
-View wrapper for draggable object, you could drag object wraped by this helper
-```
-draggable
-    : (Html.Attribute Msg)
-    -> List (Html Msg)
-    -> Html Msg
-draggable =  DnD.draggable meta DnDMsg
-
-
-draggable [class "drag-me"] ["drag me please"]
-```
--}
-draggable : a -> (Msg a m -> m) -> List (Html.Attribute m) -> List (Html m) -> Html m
-draggable meta wrap attrs html =
+draggable : (Msg a m -> m) -> a -> List (Html.Attribute m) -> List (Html m) -> Html m
+draggable wrap meta attrs html =
     div
         ([ onWithOptions "mousedown"
             { stopPropagation = True
@@ -276,22 +278,8 @@ draggable meta wrap attrs html =
         html
 
 
-{-|
-View helper for droppable area, you could drop object to this area,
-after that your on `Drop meta` message will be invoked.
-```
-droppable
-  : (Html.Attribute Msg)
-  -> List (Html Msg)
-  -> Html Msg
-droppable = DnD.droppable Dropped DnDMsg
-
-
-droppable [class "drop-here"] []
-```
--}
-droppable : (a -> m) -> (Msg a m -> m) -> List (Html.Attribute m) -> List (Html m) -> Html m
-droppable onDrop wrap attrs html =
+droppable : (Msg a m -> m) -> (a -> m) -> List (Html.Attribute m) -> List (Html m) -> Html m
+droppable wrap onDrop attrs html =
     div
         (attrs
             ++ [ onMouseEnter (wrap <| EnterDroppable onDrop)

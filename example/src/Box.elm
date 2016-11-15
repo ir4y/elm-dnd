@@ -15,10 +15,14 @@ main =
         }
 
 
+dnd =
+    DnD.init DnDMsg
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ DnD.subscriptions DnDMsg model.draggable
+        [ dnd.subscriptions model.draggable
         ]
 
 
@@ -30,7 +34,7 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model DnD.init 0, Cmd.none )
+    ( Model dnd.model 0, Cmd.none )
 
 
 type Msg
@@ -68,9 +72,8 @@ view model =
                 , "border" => "1px solid black"
                 ]
             ]
-            [ DnD.draggable (model.count + 1) DnDMsg [] [ dragged model.count ] ]
-        , DnD.droppable Dropped
-            DnDMsg
+            [ dnd.draggable (model.count + 1) [] [ dragged model.count ] ]
+        , dnd.droppable Dropped
             [ style
                 [ "width" => "49%"
                 , "min-height" => "200px"

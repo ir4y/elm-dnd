@@ -9,23 +9,48 @@ The dragget object will get some meta information.
 Also, you could wrap another element with `droppable OnDrop`,  
 so if you drop element over that element, the message `OnDrop meta` will be fired.  
 
-Actually, we need a message wrapper so the actual signature will be  
-`droppable OnDrop DnDMsg` and `OnDrop meta DnDMsg`.  
-this functions will generate a view function which will render `div` tag with handlers for drag and drop mouse events.  
+At first you need to initialize draggable state and function.  
+`DnD.init` helper returns initModel, subscription, draggable and droppable functions for your message wrapper.  
 
-So finally API will be  
-```elm
-droppable : (Html.Attribute Msg) -> List (Html Msg) -> Html Msg
-droppable = DnD.droppable Dropped DnDMsg
-
-draggable : (Html.Attribute Msg) -> List (Html Msg) -> Html Msg
-draggable =  DnD.draggable meta DnDMsg
+```
+type Msg
+    = NoOp
+    ..
+    | Dropped String
+    | DnDMsg (DnD.Msg String Msg)
 
 
-view = div []
-    [ draggable [class "drag-me"] ["drag me please"]
-    , droppable [class "drop-here"] []
-    ]
+dnd = DnD.init DnDWrapper
+type alias Model =
+    { ...
+    , draggable = dnd.model
+    }
+```
+
+Subscriptions alow you to get drop event.
+```
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ dnd.subscriptions model.draggable
+        ]
+```
+View wrapper for draggable object, you could drag object wraped by this helper
+```
+draggable
+    : (Html.Attribute Msg)
+    -> List (Html Msg)
+    -> Html Msg
+draggable =  dnd.draggable meta
+```
+View helper for droppable area, you could drop object to this area,
+after that your on `Drop meta` message will be invoked.
+```
+droppable
+  : (Html.Attribute Msg)
+  -> List (Html Msg)
+  -> Html Msg
+droppable = dnd.droppable Dropped
 ```
 
 You can find examples [here](https://github.com/ir4y/elm-dnd/tree/master/example/src).  

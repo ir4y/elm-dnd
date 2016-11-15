@@ -15,10 +15,14 @@ main =
         }
 
 
+dnd =
+    DnD.init DnDMsg
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ DnD.subscriptions DnDMsg model.draggable
+        [ dnd.subscriptions model.draggable
         ]
 
 
@@ -54,7 +58,7 @@ initList =
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model DnD.init initList, Cmd.none )
+    ( Model dnd.model initList, Cmd.none )
 
 
 type Msg
@@ -164,7 +168,7 @@ view model =
                 |> List.indexedMap
                     (\index item ->
                         [ droppable index model.draggable
-                        , DnD.draggable ( index, item.repr ) DnDMsg [] [ box "solid" item.repr ]
+                        , dnd.draggable ( index, item.repr ) [] [ box "solid" item.repr ]
                         ]
                     )
                 |> List.concat
@@ -187,9 +191,8 @@ view model =
 
 
 droppable index draggableModel =
-    DnD.droppable
+    dnd.droppable
         (Dropped index)
-        DnDMsg
         [ style
             [ "width" => "40px"
             , "height" => "20px"
