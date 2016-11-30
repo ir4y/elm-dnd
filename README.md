@@ -4,12 +4,12 @@ This library allows you to build great UI with drag-and-drop simple.
 It is abstracting you from mouse events and other low-level staff.  
 You can operate high-level things such as draggable and droppable areas.  
 
-The idea of package API is you should be able to wrap elements with `draggable met`a to add an ability to drag it.  
-The dragget object will get some meta information.  
-Also, you could wrap another element with `droppable OnDrop`,  
-so if you drop element over that element, the message `OnDrop meta` will be fired.  
+The idea of package API is you should be able to wrap elements with `draggable meta` to add an ability to drag it.  
+The dragging object will get some meta information.  
+Also, you could wrap another element with `droppable Drop`,  
+so if you drop element over that element, the message `Drop meta` will be invoked.  
 
-At first you need to initialize draggable state and function.  
+At first, you need to initialize draggable state and function.  
 `DnD.init` helper returns initModel, subscription, draggable and droppable functions for your message wrapper.  
 
 ```elm
@@ -31,9 +31,7 @@ Subscriptions alow you to get drop event.
 ```elm
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ dnd.subscriptions model.draggable
-        ]
+    dnd.subscriptions model.draggable
 ```
 View wrapper for draggable object, you could drag object wraped by this helper
 ```elm

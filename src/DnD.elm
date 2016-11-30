@@ -16,7 +16,7 @@ It is abstracting you from mouse events and other low-level staff.
 You can operate high-level things such as draggable and droppable areas.
 
 The idea of package API is you should be able to wrap elements with `draggable meta` to add an ability to drag it.
-The dragget object will get some meta information.
+The dragged object will get some meta information.
 Also, you could wrap another element with `droppable OnDrop`,
 so if you drop element over that element, the message `OnDrop meta` will be fired.
 
@@ -104,11 +104,9 @@ Subscriptions alow you to get drop event.
 ```
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ dnd.subscriptions model.draggable
-        ]
+    dnd.subscriptions model.draggable
 ```
-View wrapper for draggable object, you could drag object wraped by this helper
+View wrapper for draggable object, you could drag object wrapped by this helper
 ```
 draggable
     : (Html.Attribute Msg)
@@ -116,8 +114,8 @@ draggable
     -> Html Msg
 draggable =  dnd.draggable meta
 ```
-View helper for droppable area, you could drop object to this area,
-after that your on `Drop meta` message will be invoked.
+View helper for the droppable area, you could drop object to this area,
+after that, your `Drop meta` message will be sended.
 ```
 droppable
   : (Html.Attribute Msg)
@@ -138,7 +136,7 @@ init wrap =
 {-|
 Helper that return you a message that will be invoked.
 if an object will be dropped at the current area.
-It is useful to check is it area allow you to drop object and highlight it for example.
+It is useful to check is it area allow you to drop an object and highlight it for example.
 ```
 DnD.droppable Dropped
   DnDMsg
@@ -166,7 +164,7 @@ atDroppable (Draggable draggable) =
 
 
 {-|
-Helper that allow you to get meta information from current draggable object.
+Helper that allow you to get meta information from a current draggable object.
 You can use it to remove draggable object from the list
 ```
 elements = model.elements
@@ -309,7 +307,7 @@ draggedStyle position =
 
 
 {-|
-View helper for draggable object, it drows html of dragged object under your mouse in process of drag.
+View helper for a draggable object, it draws HTML of dragged object under your mouse in process of drag.
 ```
 box : Int -> Html Msg
 dragged item =
