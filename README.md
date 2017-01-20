@@ -1,7 +1,7 @@
 # elm-dnd
 
 This library allows you to build great UI with drag-and-drop simple.  
-It is abstracting you from mouse events and other low-level staff.  
+It is abstracting you from mouse events and other low-level stuff.  
 You can operate high-level things such as draggable and droppable areas.  
 
 The idea of package API is you should be able to wrap elements with `draggable meta` to add an ability to drag it.  
