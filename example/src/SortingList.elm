@@ -16,7 +16,7 @@ main =
 
 
 dnd =
-    DnD.init DnDMsg
+    DnD.init DnDMsg Dropped
 
 
 subscriptions : Model -> Sub Msg
@@ -27,11 +27,11 @@ subscriptions model =
 
 
 type alias Draggable =
-    DnD.Draggable ( Int, String ) Msg
+    DnD.Draggable Int ( Int, String ) Msg
 
 
 type alias DraggableMsg =
-    DnD.Msg ( Int, String ) Msg
+    DnD.Msg Int ( Int, String ) Msg
 
 
 type alias Item =
@@ -192,15 +192,15 @@ view model =
 
 droppable index draggableModel =
     dnd.droppable
-        (Dropped index)
+        index
         [ style
             [ "width" => "40px"
             , "height" => "20px"
             , "float" => "left"
             , "background-color"
                 => if
-                    case DnD.atDroppable draggableModel of
-                        Just (Dropped to _) ->
+                    case DnD.getDropMeta draggableModel of
+                        Just to ->
                             to == index
 
                         _ ->
