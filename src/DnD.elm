@@ -3,8 +3,8 @@ module DnD
         ( Draggable
         , Msg
         , DraggableInit
-        , atDroppable
-        , getMeta
+        , getDropMeta
+        , getDragMeta
         , init
         , update
         , dragged
@@ -15,18 +15,18 @@ This library allows you to build great UI with drag-and-drop simple.
 It is abstracting you from mouse events and other low-level staff.
 You can operate high-level things such as draggable and droppable areas.
 
-The idea of package API is you should be able to wrap elements with `draggable meta` to add an ability to drag it.
+The idea of package API is you should be able to wrap elements with `draggable dragMeta` to add an ability to drag it.
 The dragged object will get some meta information.
-Also, you could wrap another element with `droppable OnDrop`,
-so if you drop element over that element, the message `OnDrop meta` will be fired.
+Also, you could wrap another element with `droppable dropMeta`,
+so if you drop element over that element, the message `OnDrop dropMeta dragMeta` will be fired.
 
 You can find examples [here](https://github.com/ir4y/elm-dnd/tree/master/example/src).
 
 # Draggable types and its constructor
 @docs DraggableInit, Draggable, init
 
-# Helpers to get information about draggable object
-@docs atDroppable, getMeta
+# Helpers to get information about draggable and droppable object
+@docs getDropMeta, getDragMeta
 
 # Message type
 @docs Msg
@@ -58,12 +58,12 @@ type alias Model =
     }
 ```
 -}
-type Draggable a m
+type Draggable dropMeta dragMeta m
     = Draggable
         (Maybe
-            { meta : a
+            { dragMeta : dragMeta
             , position : Mouse.Position
-            , atDroppable : Maybe (a -> m)
+            , dropMeta : Maybe dropMeta
             }
         )
 
@@ -72,11 +72,12 @@ type Draggable a m
 The type of init function result.
 See `init` for more information.
 -}
-type alias DraggableInit a m =
-    { model : Draggable a m
-    , subscriptions : Draggable a m -> Sub m
-    , draggable : a -> List (Html.Attribute m) -> List (Html m) -> Html m
-    , droppable : (a -> m) -> List (Html.Attribute m) -> List (Html m) -> Html m
+type alias DraggableInit dropMeta dragMeta m =
+    { model : Draggable dropMeta dragMeta m
+    , subscriptions : Draggable dropMeta dragMeta m -> Sub m
+    , draggable : dragMeta -> List (Html.Attribute m) -> List (Html m) -> Html m
+    , droppable : dropMeta -> List (Html.Attribute m) -> List (Html m) -> Html m
+    , droppable_ : Draggable dropMeta dragMeta m -> dropMeta -> List (Html.Attribute m) -> List (Html m) -> Html m
     }
 
 
@@ -124,17 +125,18 @@ droppable
 droppable = dnd.droppable Dropped
 ```
 -}
-init : (Msg a m -> m) -> DraggableInit a m
-init wrap =
+init : (Msg dropMeta dragMeta m -> m) -> (dropMeta -> dragMeta -> m) -> DraggableInit dropMeta dragMeta m
+init wrap onDrop =
     { model = Draggable Nothing
-    , subscriptions = subscriptions wrap
+    , subscriptions = subscriptions wrap onDrop
     , draggable = draggable wrap
     , droppable = droppable wrap
+    , droppable_ = droppable_ wrap
     }
 
 
 {-|
-Helper that return you a message that will be invoked.
+Helper that return you a dropMeta that will be used
 if an object will be dropped at the current area.
 It is useful to check is it area allow you to drop an object and highlight it for example.
 ```
@@ -142,8 +144,8 @@ DnD.droppable Dropped
   DnDMsg
    [ style
      [ "background-color"
-       => case DnD.atDroppable model.draggable of
-         Just (Dropped _) ->
+       => case DnD.getDropMeta model.draggable of
+         Just _ ->
            "cyan"
 
          _ ->
@@ -153,14 +155,10 @@ DnD.droppable Dropped
    []
 ```
 -}
-atDroppable : Draggable a m -> Maybe m
-atDroppable (Draggable draggable) =
+getDropMeta : Draggable dropMeta dragMeta m -> Maybe dropMeta
+getDropMeta (Draggable draggable) =
     draggable
-        |> Maybe.andThen
-            (\d ->
-                d.atDroppable
-                    |> Maybe.map (\f -> f d.meta)
-            )
+        |> Maybe.andThen .dropMeta
 
 
 {-|
@@ -170,15 +168,15 @@ You can use it to remove draggable object from the list
 elements = model.elements
     |> List.filter
         (e -> model.draggable
-            |>  getMeta
+            |>  getDragMeta
             |> Maybe.map (meta -> meta.id /= e.id )
         )
 ```
 -}
-getMeta : Draggable a m -> Maybe a
-getMeta (Draggable draggable) =
+getDragMeta : Draggable dropMeta dragMeta m -> Maybe dragMeta
+getDragMeta (Draggable draggable) =
     draggable
-        |> Maybe.map .meta
+        |> Maybe.map .dragMeta
 
 
 {-| Inner messages, you should pass them to DnD.update at your update function.
@@ -188,26 +186,26 @@ type Msg
     | DnDMsg (DnD.Msg Int Msg)
 ```
 -}
-type Msg a m
-    = DragStart a Mouse.Position
+type Msg dropMeta dragMeta m
+    = DragStart dragMeta Mouse.Position
     | Dragging Mouse.Position
     | DragEnd Mouse.Position
-    | EnterDroppable (a -> m)
+    | EnterDroppable dropMeta
     | LeaveDroppable
 
 
-subscriptions : (Msg a m -> m) -> Draggable a m -> Sub m
-subscriptions wrap (Draggable model) =
+subscriptions : (Msg dropMeta dragMeta m -> m) -> (dropMeta -> dragMeta -> m) -> Draggable dropMeta dragMeta m -> Sub m
+subscriptions wrap onDrop (Draggable model) =
     case model of
         Nothing ->
             Sub.none
 
         Just drag ->
-            case drag.atDroppable of
-                Just onDrop ->
+            case drag.dropMeta of
+                Just dropMeta ->
                     Sub.batch
                         [ Mouse.moves (wrap << Dragging)
-                        , Mouse.ups <| always <| onDrop drag.meta
+                        , Mouse.ups <| always <| onDrop dropMeta drag.dragMeta
                         , Mouse.ups (wrap << DragEnd)
                         ]
 
@@ -232,15 +230,15 @@ update msg model =
                     = DnD.update msg model.draggable }
 ``
 -}
-update : Msg a m -> Draggable a m -> Draggable a m
+update : Msg dropMeta dragMeta m -> Draggable dropMeta dragMeta m -> Draggable dropMeta dragMeta m
 update msg (Draggable model) =
     case msg of
-        DragStart meta xy ->
+        DragStart dragMeta xy ->
             Draggable <|
                 Just
-                    { meta = meta
+                    { dragMeta = dragMeta
                     , position = xy
-                    , atDroppable = Nothing
+                    , dropMeta = Nothing
                     }
 
         Dragging xy ->
@@ -251,18 +249,18 @@ update msg (Draggable model) =
         DragEnd xy ->
             Draggable Nothing
 
-        EnterDroppable onValidDrop ->
+        EnterDroppable dropMeta ->
             model
-                |> Maybe.map (\d -> { d | atDroppable = Just onValidDrop })
+                |> Maybe.map (\d -> { d | dropMeta = Just dropMeta })
                 |> Draggable
 
         LeaveDroppable ->
             model
-                |> Maybe.map (\d -> { d | atDroppable = Nothing })
+                |> Maybe.map (\d -> { d | dropMeta = Nothing })
                 |> Draggable
 
 
-draggable : (Msg a m -> m) -> a -> List (Html.Attribute m) -> List (Html m) -> Html m
+draggable : (Msg dropMeta dragMeta m -> m) -> dragMeta -> List (Html.Attribute m) -> List (Html m) -> Html m
 draggable wrap meta attrs html =
     div
         ([ onWithOptions "mousedown"
@@ -276,15 +274,25 @@ draggable wrap meta attrs html =
         html
 
 
-droppable : (Msg a m -> m) -> (a -> m) -> List (Html.Attribute m) -> List (Html m) -> Html m
-droppable wrap onDrop attrs html =
+droppable : (Msg dropMeta dragMeta m -> m) -> dropMeta -> List (Html.Attribute m) -> List (Html m) -> Html m
+droppable wrap dropMeta attrs html =
     div
         (attrs
-            ++ [ onMouseEnter (wrap <| EnterDroppable onDrop)
+            ++ [ onMouseEnter (wrap <| EnterDroppable dropMeta)
                , onMouseLeave (wrap LeaveDroppable)
                ]
         )
         html
+
+
+droppable_ : (Msg dropMeta dragMeta m -> m) -> Draggable dropMeta dragMeta m -> dropMeta -> List (Html.Attribute m) -> List (Html m) -> Html m
+droppable_ wrap (Draggable model) dropMeta attrs html =
+    case model of
+        Nothing ->
+            div attrs html
+
+        Just _ ->
+            droppable wrap dropMeta attrs html
 
 
 px : Int -> String
@@ -318,8 +326,8 @@ DnD.dragged
   box
 ```
 -}
-dragged : Draggable a m -> (a -> Html m) -> Html m
+dragged : Draggable dropMeta dragMeta m -> (dragMeta -> Html m) -> Html m
 dragged (Draggable model) view =
     model
-        |> Maybe.map (\{ meta, position } -> div [ draggedStyle position ] [ view meta ])
+        |> Maybe.map (\{ dragMeta, position } -> div [ draggedStyle position ] [ view dragMeta ])
         |> Maybe.withDefault (text "")
