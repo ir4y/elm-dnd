@@ -27,11 +27,11 @@ subscriptions model =
 
 
 type alias Draggable =
-    DnD.Draggable Int ( Int, String ) Msg
+    DnD.Draggable Int ( Int, String )
 
 
 type alias DraggableMsg =
-    DnD.Msg Int ( Int, String ) Msg
+    DnD.Msg Int ( Int, String )
 
 
 type alias Item =

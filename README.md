@@ -17,23 +17,31 @@ type Msg
     = NoOp
     ..
     | OnDrop String Int
-    | DnDMsg (DnD.Msg String Msg)
+    | DnDMsg (DnD.Msg String Int)
+
+
+type alias Model =
+    { ...
+    , draggable : DnD.Draggable String Int
+    }
 
 
 dnd = DnD.init DnDMsg OnDrop
-type alias Model =
+
+
+model =
     { ...
-    , draggable = dnd.model
+    , draggable : dnd.model
     }
 ```
 
-Subscriptions alow you to get drop event.
+Subscriptions allow you to get drop event.
 ```elm
 subscriptions : Model -> Sub Msg
 subscriptions model =
     dnd.subscriptions model.draggable
 ```
-View wrapper for draggable object, you could drag object wraped by this helper
+View wrapper for draggable object, you could drag object wrapped by this helper
 ```elm
 draggable
     : (Html.Attribute Msg)

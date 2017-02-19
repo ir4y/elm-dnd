@@ -27,7 +27,7 @@ subscriptions model =
 
 
 type alias Model =
-    { draggable : DnD.Draggable () Int Msg
+    { draggable : DnD.Draggable () Int
     , count : Int
     }
 
@@ -39,7 +39,7 @@ init =
 
 type Msg
     = Dropped Int
-    | DnDMsg (DnD.Msg () Int Msg)
+    | DnDMsg (DnD.Msg () Int)
 
 
 update : Msg -> Model -> ( Model, Cmd.Cmd Msg )
