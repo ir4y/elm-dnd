@@ -44,8 +44,8 @@ type alias Item =
 type alias Model =
     { left : List Item
     , right : List Item
-    , draggableLeft : DnD.Draggable () Item Msg
-    , draggableRight : DnD.Draggable () Item Msg
+    , draggableLeft : DnD.Draggable () Item
+    , draggableRight : DnD.Draggable () Item
     }
 
 
@@ -63,8 +63,8 @@ init =
 type Msg
     = DropToRight Item
     | DropToLeft Item
-    | DnDMsgLeftColumn (DnD.Msg () Item Msg)
-    | DnDMsgRightColumn (DnD.Msg () Item Msg)
+    | DnDMsgLeftColumn (DnD.Msg () Item)
+    | DnDMsgRightColumn (DnD.Msg () Item)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

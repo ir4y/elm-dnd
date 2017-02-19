@@ -27,7 +27,7 @@ subscriptions model =
 
 
 type alias Model =
-    DnD.Draggable Never String Msg
+    DnD.Draggable Never String
 
 
 init : ( Model, Cmd Msg )
@@ -36,7 +36,7 @@ init =
 
 
 type Msg
-    = DnDMsg (DnD.Msg Never String Msg)
+    = DnDMsg (DnD.Msg Never String)
 
 
 update : Msg -> Model -> ( Model, Cmd.Cmd Msg )

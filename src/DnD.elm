@@ -58,7 +58,7 @@ type alias Model =
     }
 ```
 -}
-type Draggable dropMeta dragMeta m
+type Draggable dropMeta dragMeta
     = Draggable
         (Maybe
             { dragMeta : dragMeta
@@ -73,8 +73,8 @@ The type of init function result.
 See `init` for more information.
 -}
 type alias DraggableInit dropMeta dragMeta m =
-    { model : Draggable dropMeta dragMeta m
-    , subscriptions : Draggable dropMeta dragMeta m -> Sub m
+    { model : Draggable dropMeta dragMeta
+    , subscriptions : Draggable dropMeta dragMeta -> Sub m
     , draggable : dragMeta -> List (Html.Attribute m) -> List (Html m) -> Html m
     , droppable : dropMeta -> List (Html.Attribute m) -> List (Html m) -> Html m
     }
@@ -124,7 +124,7 @@ droppable
 droppable = dnd.droppable Dropped
 ```
 -}
-init : (Msg dropMeta dragMeta m -> m) -> (dropMeta -> dragMeta -> m) -> DraggableInit dropMeta dragMeta m
+init : (Msg dropMeta dragMeta -> m) -> (dropMeta -> dragMeta -> m) -> DraggableInit dropMeta dragMeta m
 init wrap onDrop =
     { model = Draggable Nothing
     , subscriptions = subscriptions wrap onDrop
@@ -153,7 +153,7 @@ DnD.droppable Dropped
    []
 ```
 -}
-getDropMeta : Draggable dropMeta dragMeta m -> Maybe dropMeta
+getDropMeta : Draggable dropMeta dragMeta -> Maybe dropMeta
 getDropMeta (Draggable draggable) =
     draggable
         |> Maybe.andThen .dropMeta
@@ -171,7 +171,7 @@ elements = model.elements
         )
 ```
 -}
-getDragMeta : Draggable dropMeta dragMeta m -> Maybe dragMeta
+getDragMeta : Draggable dropMeta dragMeta -> Maybe dragMeta
 getDragMeta (Draggable draggable) =
     draggable
         |> Maybe.map .dragMeta
@@ -184,7 +184,7 @@ type Msg
     | DnDMsg (DnD.Msg Int Msg)
 ```
 -}
-type Msg dropMeta dragMeta m
+type Msg dropMeta dragMeta
     = DragStart dragMeta Mouse.Position
     | Dragging Mouse.Position
     | DragEnd Mouse.Position
@@ -192,7 +192,7 @@ type Msg dropMeta dragMeta m
     | LeaveDroppable
 
 
-subscriptions : (Msg dropMeta dragMeta m -> m) -> (dropMeta -> dragMeta -> m) -> Draggable dropMeta dragMeta m -> Sub m
+subscriptions : (Msg dropMeta dragMeta -> m) -> (dropMeta -> dragMeta -> m) -> Draggable dropMeta dragMeta -> Sub m
 subscriptions wrap onDrop (Draggable model) =
     case model of
         Nothing ->
@@ -228,7 +228,7 @@ update msg model =
                     = DnD.update msg model.draggable }
 ``
 -}
-update : Msg dropMeta dragMeta m -> Draggable dropMeta dragMeta m -> Draggable dropMeta dragMeta m
+update : Msg dropMeta dragMeta -> Draggable dropMeta dragMeta -> Draggable dropMeta dragMeta
 update msg (Draggable model) =
     case msg of
         DragStart dragMeta xy ->
@@ -258,7 +258,7 @@ update msg (Draggable model) =
                 |> Draggable
 
 
-draggable : (Msg dropMeta dragMeta m -> m) -> dragMeta -> List (Html.Attribute m) -> List (Html m) -> Html m
+draggable : (Msg dropMeta dragMeta -> m) -> dragMeta -> List (Html.Attribute m) -> List (Html m) -> Html m
 draggable wrap meta attrs html =
     div
         ([ onWithOptions "mousedown"
@@ -272,7 +272,7 @@ draggable wrap meta attrs html =
         html
 
 
-droppable : (Msg dropMeta dragMeta m -> m) -> dropMeta -> List (Html.Attribute m) -> List (Html m) -> Html m
+droppable : (Msg dropMeta dragMeta -> m) -> dropMeta -> List (Html.Attribute m) -> List (Html m) -> Html m
 droppable wrap dropMeta attrs html =
     div
         (attrs
@@ -314,7 +314,7 @@ DnD.dragged
   box
 ```
 -}
-dragged : Draggable dropMeta dragMeta m -> (dragMeta -> Html m) -> Html m
+dragged : Draggable dropMeta dragMeta -> (dragMeta -> Html m) -> Html m
 dragged (Draggable model) view =
     model
         |> Maybe.map (\{ dragMeta, position } -> div [ draggedStyle position ] [ view dragMeta ])
