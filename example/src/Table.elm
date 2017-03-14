@@ -4,6 +4,7 @@ import Html
 import Html.Attributes exposing (style)
 import Html exposing (..)
 import DnD
+import Mouse
 
 
 main =
@@ -148,11 +149,27 @@ view model =
             )
         , DnD.dragged
             model.draggableLeft
+            (Just draggedStyle)
             dragged
         , DnD.dragged
             model.draggableRight
+            Nothing
             dragged
         ]
+
+
+draggedStyle : Mouse.Position -> Attribute m
+draggedStyle p =
+    let
+        px p =
+            (toString p) ++ "px"
+    in
+        style
+            [ "position" => "absolute"
+            , "left" => px p.x
+            , "top" => px p.y
+            , "border" => "1px dotted #eee"
+            ]
 
 
 box : Item -> Html Msg
