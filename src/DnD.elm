@@ -315,11 +315,21 @@ dragged item =
 
 DnD.dragged
   model.draggable
+  Nothing
   box
 ```
 -}
-dragged : Draggable a m -> (a -> Html m) -> Html m
-dragged (Draggable model) view =
-    model
-        |> Maybe.map (\{ meta, position } -> div [ draggedStyle position ] [ view meta ])
-        |> Maybe.withDefault (text "")
+dragged : Draggable a m -> Maybe (Mouse.Position -> Html.Attribute m) -> (a -> Html m) -> Html m
+dragged (Draggable model) ownStyle view =
+    let
+        styler =
+            case ownStyle of
+                Nothing ->
+                    draggedStyle
+
+                Just fn ->
+                    fn
+    in
+        model
+            |> Maybe.map (\{ meta, position } -> div [ styler position ] [ view meta ])
+            |> Maybe.withDefault (text "")

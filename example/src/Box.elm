@@ -91,6 +91,7 @@ view model =
             []
         , DnD.dragged
             model.draggable
+            Nothing
             dragged
         ]
 

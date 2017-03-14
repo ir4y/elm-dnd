@@ -185,6 +185,7 @@ view model =
                         ]
                    , DnD.dragged
                         model.draggable
+                        Nothing
                         (box "dotted" << Tuple.second)
                    ]
             )

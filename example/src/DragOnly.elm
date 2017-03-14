@@ -50,6 +50,7 @@ view model =
         [ dnd.draggable "drag-n-drop" [] [ text "hello" ]
         , DnD.dragged
             model
+            Nothing
             dragged
         ]
 
