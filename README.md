@@ -59,4 +59,5 @@ droppable
 droppable = dnd.droppable dropMeta
 ```
 
-You can find examples [here](https://github.com/ir4y/elm-dnd/tree/master/example/src).  
+You can find simple examples [here](https://github.com/ir4y/elm-dnd/tree/master/example/src).  
+For more complex example check [Chess Board](https://github.com/ir4y/elm-chess).  
