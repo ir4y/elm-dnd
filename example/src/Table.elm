@@ -16,11 +16,11 @@ main =
 
 
 dndLeft =
-    DnD.init DnDMsgLeftColumn
+    DnD.init DnDMsgLeftColumn (always DropToLeft)
 
 
 dndRigth =
-    DnD.init DnDMsgRightColumn
+    DnD.init DnDMsgRightColumn (always DropToRight)
 
 
 subscriptions : Model -> Sub Msg
@@ -44,8 +44,8 @@ type alias Item =
 type alias Model =
     { left : List Item
     , right : List Item
-    , draggableLeft : DnD.Draggable Item Msg
-    , draggableRight : DnD.Draggable Item Msg
+    , draggableLeft : DnD.Draggable () Item
+    , draggableRight : DnD.Draggable () Item
     }
 
 
@@ -63,8 +63,8 @@ init =
 type Msg
     = DropToRight Item
     | DropToLeft Item
-    | DnDMsgLeftColumn (DnD.Msg Item Msg)
-    | DnDMsgRightColumn (DnD.Msg Item Msg)
+    | DnDMsgLeftColumn (DnD.Msg () Item)
+    | DnDMsgRightColumn (DnD.Msg () Item)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -110,14 +110,14 @@ update_ msg model =
 view : Model -> Html Msg
 view model =
     div [ style [ "width" => "100%" ] ]
-        [ dndLeft.droppable DropToLeft
+        [ dndLeft.droppable ()
             [ style
                 [ "width" => "50%"
                 , "min-height" => "200px"
                 , "float" => "left"
                 , "background-color"
-                    => case DnD.atDroppable model.draggableLeft of
-                        Just (DropToLeft _) ->
+                    => case DnD.getDropMeta model.draggableLeft of
+                        Just _ ->
                             "cyan"
 
                         _ ->
@@ -128,14 +128,14 @@ view model =
                 (\item -> dndRigth.draggable item [] [ box item ])
                 model.left
             )
-        , dndRigth.droppable DropToRight
+        , dndRigth.droppable ()
             [ style
                 [ "width" => "50%"
                 , "min-height" => "200px"
                 , "float" => "right"
                 , "background-color"
-                    => case DnD.atDroppable model.draggableRight of
-                        Just (DropToRight _) ->
+                    => case DnD.getDropMeta model.draggableRight of
+                        Just _ ->
                             "cyan"
 
                         _ ->

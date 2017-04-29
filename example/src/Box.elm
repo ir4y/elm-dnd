@@ -16,7 +16,7 @@ main =
 
 
 dnd =
-    DnD.init DnDMsg
+    DnD.init DnDMsg (always Dropped)
 
 
 subscriptions : Model -> Sub Msg
@@ -27,7 +27,7 @@ subscriptions model =
 
 
 type alias Model =
-    { draggable : DnD.Draggable Int Msg
+    { draggable : DnD.Draggable () Int
     , count : Int
     }
 
@@ -39,7 +39,7 @@ init =
 
 type Msg
     = Dropped Int
-    | DnDMsg (DnD.Msg Int Msg)
+    | DnDMsg (DnD.Msg () Int)
 
 
 update : Msg -> Model -> ( Model, Cmd.Cmd Msg )
@@ -73,15 +73,15 @@ view model =
                 ]
             ]
             [ dnd.draggable (model.count + 1) [] [ dragged model.count ] ]
-        , dnd.droppable Dropped
+        , dnd.droppable ()
             [ style
                 [ "width" => "49%"
                 , "min-height" => "200px"
                 , "float" => "right"
                 , "border" => "1px solid black"
                 , "background-color"
-                    => case DnD.atDroppable model.draggable of
-                        Just (Dropped _) ->
+                    => case DnD.getDropMeta model.draggable of
+                        Just _ ->
                             "cyan"
 
                         _ ->
