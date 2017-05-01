@@ -16,11 +16,12 @@ It is abstracting you from mouse events and other low-level staff.
 You can operate high-level things such as draggable and droppable areas.
 
 The idea of package API is you should be able to wrap elements with `draggable dragMeta` to add an ability to drag it.
-The dragged object will get some meta information.
+The dragged object will get some meta information via `dragMeta` argument.
 Also, you could wrap another element with `droppable dropMeta`,
-so if you drop element over that element, the message `OnDrop dropMeta dragMeta` will be fired.
+so if you drop element over that element, the message `YourOnDropMessage dropMeta dragMeta` will be fired.
 
-You can find examples [here](https://github.com/ir4y/elm-dnd/tree/master/example/src).
+You can find simple examples [here](https://github.com/ir4y/elm-dnd/tree/master/example/src).
+For more complex example check [Chess Board](https://github.com/ir4y/elm-chess). 
 
 # Draggable types and its constructor
 @docs DraggableInit, Draggable, init
@@ -48,12 +49,11 @@ import Mouse
 
 {-|
 Type of Draggable object.
-It is parametrized by the type of meta information and
-message constructor that will be invoked on Drop event
+It is parametrized by types of dragMeta and dropMeta.
 You should place it inside your Model.
 ```
 type alias Model =
-    { draggable : DnD.Draggable Int Msg
+    { draggable : DnD.Draggable Int Int
     , count : Int
     }
 ```
@@ -89,11 +89,11 @@ for your message wrapper.
 type Msg
     = NoOp
     ..
-    | Dropped String
-    | DnDMsg (DnD.Msg String Msg)
+    | Dropped Int Int
+    | DnDMsg (DnD.Msg Int Int)
 
 
-dnd = DnD.init DnDMsg
+dnd = DnD.init DnDMsg Dropped
 type alias Model =
     { ...
     , draggable = dnd.model
@@ -109,19 +109,19 @@ subscriptions model =
 View wrapper for draggable object, you could drag object wrapped by this helper
 ```
 draggable
-    : (Html.Attribute Msg)
+    : List (Html.Attribute Msg)
     -> List (Html Msg)
     -> Html Msg
-draggable =  dnd.draggable meta
+draggable = dnd.draggable dragMeta
 ```
 View helper for the droppable area, you could drop object to this area,
-after that, your `Drop meta` message will be sended.
+after that, your `Dropped meta` message will be sended.
 ```
 droppable
-  : (Html.Attribute Msg)
-  -> List (Html Msg)
-  -> Html Msg
-droppable = dnd.droppable Dropped
+    : List (Html.Attribute Msg)
+    -> List (Html Msg)
+    -> Html Msg
+droppable = dnd.droppable dropMeta
 ```
 -}
 init : (Msg dropMeta dragMeta -> m) -> (dropMeta -> dragMeta -> m) -> DraggableInit dropMeta dragMeta m
@@ -138,8 +138,7 @@ Helper that return you a dropMeta that will be used
 if an object will be dropped at the current area.
 It is useful to check is it area allow you to drop an object and highlight it for example.
 ```
-DnD.droppable Dropped
-  DnDMsg
+dnd.droppable meta
    [ style
      [ "background-color"
        => case DnD.getDropMeta model.draggable of
@@ -165,9 +164,9 @@ You can use it to remove draggable object from the list
 ```
 elements = model.elements
     |> List.filter
-        (e -> model.draggable
-            |>  getDragMeta
-            |> Maybe.map (meta -> meta.id /= e.id )
+        (\e -> model.draggable
+            |> getDragMeta
+            |> Maybe.map (\meta -> meta.id /= e.id )
         )
 ```
 -}
@@ -180,8 +179,8 @@ getDragMeta (Draggable draggable) =
 {-| Inner messages, you should pass them to DnD.update at your update function.
 ```
 type Msg
-    = Dropped Item
-    | DnDMsg (DnD.Msg Int Msg)
+    = Dropped Int
+    | DnDMsg (DnD.Msg Int Int)
 ```
 -}
 type Msg dropMeta dragMeta
@@ -226,7 +225,7 @@ update msg model =
             { model
                 | draggable
                     = DnD.update msg model.draggable }
-``
+```
 -}
 update : Msg dropMeta dragMeta -> Draggable dropMeta dragMeta -> Draggable dropMeta dragMeta
 update msg (Draggable model) =
