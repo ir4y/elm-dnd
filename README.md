@@ -7,7 +7,7 @@ You can operate high-level things such as draggable and droppable areas.
 The idea of package API is you should be able to wrap elements with `draggable dragMeta` to add an ability to drag it.  
 The dragging object will get some meta information.  
 Also, you could wrap another element with `droppable dropMeta`,  
-so if you drop element over that element, the message `OnDrop dragMeta dropMeta` will be invoked.  
+so if you drop element over that element, the message `YourOnDropMessage dragMeta dropMeta` will be invoked.  
 
 At first, you need to initialize draggable state and function.  
 `DnD.init` helper returns initModel, subscription, draggable and droppable functions for your message wrapper and onDrop message.
