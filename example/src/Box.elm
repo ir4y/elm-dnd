@@ -1,13 +1,13 @@
-module Box exposing (..)
+module Box exposing (Model, Msg(..), dnd, dragged, init, main, subscriptions, update, update_, view)
 
-import Html
-import Html.Attributes exposing (style)
-import Html exposing (..)
+import Browser
 import DnD
+import Html exposing (..)
+import Html.Attributes exposing (style)
 
 
 main =
-    Html.program
+    Browser.element
         { init = init
         , update = update
         , view = view
@@ -32,8 +32,8 @@ type alias Model =
     }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : () -> ( Model, Cmd Msg )
+init _ =
     ( Model dnd.model 0, Cmd.none )
 
 
@@ -53,40 +53,34 @@ update_ msg model =
         Dropped item ->
             { model | count = item + 1 }
 
-        DnDMsg msg ->
-            { model | draggable = DnD.update msg model.draggable }
-
-
-(=>) =
-    (,)
+        DnDMsg msg_ ->
+            { model | draggable = DnD.update msg_ model.draggable }
 
 
 view : Model -> Html Msg
 view model =
-    div [ style [ "width" => "100%" ] ]
+    div [ (\( a, b ) -> style a b) ( "width", "100%" ) ]
         [ div
-            [ style
-                [ "width" => "49%"
-                , "min-height" => "200px"
-                , "float" => "left"
-                , "border" => "1px solid black"
-                ]
+            [ (\( a, b ) -> style a b) ( "width", "49%" )
+            , (\( a, b ) -> style a b) ( "min-height", "200px" )
+            , (\( a, b ) -> style a b) ( "float", "left" )
+            , (\( a, b ) -> style a b) ( "border", "1px solid black" )
             ]
             [ dnd.draggable (model.count + 1) [] [ dragged model.count ] ]
         , dnd.droppable ()
-            [ style
-                [ "width" => "49%"
-                , "min-height" => "200px"
-                , "float" => "right"
-                , "border" => "1px solid black"
-                , "background-color"
-                    => case DnD.getDropMeta model.draggable of
-                        Just _ ->
-                            "cyan"
+            [ (\( a, b ) -> style a b) ( "width", "49%" )
+            , (\( a, b ) -> style a b) ( "min-height", "200px" )
+            , (\( a, b ) -> style a b) ( "float", "right" )
+            , (\( a, b ) -> style a b) ( "border", "1px solid black" )
+            , (\( a, b ) -> style a b)
+                ( "background-color"
+                , case DnD.getDropMeta model.draggable of
+                    Just _ ->
+                        "cyan"
 
-                        _ ->
-                            "white"
-                ]
+                    _ ->
+                        "white"
+                )
             ]
             []
         , DnD.dragged
@@ -98,10 +92,8 @@ view model =
 dragged : Int -> Html Msg
 dragged item =
     div
-        [ style
-            [ "height" => "20px"
-            , "width" => "20px"
-            , "border" => "1px dotted black"
-            ]
+        [ (\( a, b ) -> style a b) ( "height", "20px" )
+        , (\( a, b ) -> style a b) ( "width", "20px" )
+        , (\( a, b ) -> style a b) ( "border", "1px dotted black" )
         ]
-        [ item |> toString |> text ]
+        [ item |> Debug.toString |> text ]

@@ -1,13 +1,13 @@
-module Table exposing (..)
+module Table exposing (Id, Item, Model, Msg(..), addToLeft, addToRight, box, dndLeft, dndRigth, dragged, init, main, subscriptions, update, update_, view)
 
-import Html
-import Html.Attributes exposing (style)
-import Html exposing (..)
+import Browser
 import DnD
+import Html exposing (..)
+import Html.Attributes exposing (style)
 
 
 main =
-    Html.program
+    Browser.element
         { init = init
         , update = update
         , view = view
@@ -49,8 +49,8 @@ type alias Model =
     }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : () -> ( Model, Cmd Msg )
+init _ =
     ( Model
         [ { id = 1, text = "hello" }, { id = 2, text = "world" } ]
         [ { id = 3, text = "elm" }, { id = 4, text = "is" }, { id = 5, text = "cool" } ]
@@ -95,52 +95,47 @@ update_ msg model =
         DropToRight item ->
             addToRight model item
 
-        DnDMsgLeftColumn msg ->
-            { model | draggableLeft = DnD.update msg model.draggableLeft }
+        DnDMsgLeftColumn msg_ ->
+            { model | draggableLeft = DnD.update msg_ model.draggableLeft }
 
-        DnDMsgRightColumn msg ->
-            { model | draggableRight = DnD.update msg model.draggableRight }
-
-
-(=>) : a -> b -> ( a, b )
-(=>) =
-    (,)
+        DnDMsgRightColumn msg_ ->
+            { model | draggableRight = DnD.update msg_ model.draggableRight }
 
 
 view : Model -> Html Msg
 view model =
-    div [ style [ "width" => "100%" ] ]
+    div [ (\( a, b ) -> style a b) ( "width", "100%" ) ]
         [ dndLeft.droppable ()
-            [ style
-                [ "width" => "50%"
-                , "min-height" => "200px"
-                , "float" => "left"
-                , "background-color"
-                    => case DnD.getDropMeta model.draggableLeft of
-                        Just _ ->
-                            "cyan"
+            [ (\( a, b ) -> style a b) ( "width", "50%" )
+            , (\( a, b ) -> style a b) ( "min-height", "200px" )
+            , (\( a, b ) -> style a b) ( "float", "left" )
+            , (\( a, b ) -> style a b)
+                ( "background-color"
+                , case DnD.getDropMeta model.draggableLeft of
+                    Just _ ->
+                        "cyan"
 
-                        _ ->
-                            "white"
-                ]
+                    _ ->
+                        "white"
+                )
             ]
             (List.map
                 (\item -> dndRigth.draggable item [] [ box item ])
                 model.left
             )
         , dndRigth.droppable ()
-            [ style
-                [ "width" => "50%"
-                , "min-height" => "200px"
-                , "float" => "right"
-                , "background-color"
-                    => case DnD.getDropMeta model.draggableRight of
-                        Just _ ->
-                            "cyan"
+            [ (\( a, b ) -> style a b) ( "width", "50%" )
+            , (\( a, b ) -> style a b) ( "min-height", "200px" )
+            , (\( a, b ) -> style a b) ( "float", "right" )
+            , (\( a, b ) -> style a b)
+                ( "background-color"
+                , case DnD.getDropMeta model.draggableRight of
+                    Just _ ->
+                        "cyan"
 
-                        _ ->
-                            "white"
-                ]
+                    _ ->
+                        "white"
+                )
             ]
             (List.map
                 (\item -> dndLeft.draggable item [] [ box item ])

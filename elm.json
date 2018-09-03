@@ -1,0 +1,18 @@
+{
+    "type": "package",
+    "name": "ir4y/elm-dnd",
+    "summary": "Reusable high level drag-and-drop library for elm",
+    "license": "MIT",
+    "version": "3.0.1",
+    "exposed-modules": [
+        "DnD"
+    ],
+    "elm-version": "0.19.0 <= v < 0.20.0",
+    "dependencies": {
+        "elm/core": "1.0.0 <= v < 2.0.0",
+        "elm/html": "1.0.0 <= v < 2.0.0",
+        "elm/json": "1.0.0 <= v < 2.0.0",
+        "elm/browser": "1.0.0 <= v < 2.0.0"
+    },
+    "test-dependencies": {}
+}

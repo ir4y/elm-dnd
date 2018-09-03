@@ -1,13 +1,13 @@
-module SortingList exposing (..)
+module SortingList exposing (Draggable, DraggableMsg, Item, Model, Msg(..), box, dnd, droppable, init, initList, main, move, moveLeft, moveRight, subscriptions, update, update_, view)
 
-import Html
-import Html.Attributes exposing (style)
-import Html exposing (..)
+import Browser
 import DnD
+import Html exposing (..)
+import Html.Attributes exposing (style)
 
 
 main =
-    Html.program
+    Browser.element
         { init = init
         , update = update
         , view = view
@@ -56,8 +56,8 @@ initList =
     ]
 
 
-init : ( Model, Cmd Msg )
-init =
+init : () -> ( Model, Cmd Msg )
+init _ =
     ( Model dnd.model initList, Cmd.none )
 
 
@@ -69,6 +69,7 @@ type Msg
 move items from to =
     if to < from then
         moveLeft items from (to - 1)
+
     else
         moveRight items from (to - 1)
 
@@ -100,7 +101,7 @@ moveLeft items from to =
         rest =
             List.drop (from + 1) items
     in
-        first ++ item ++ middle ++ rest
+    first ++ item ++ middle ++ rest
 
 
 
@@ -130,7 +131,7 @@ moveRight items from to =
         rest =
             List.drop (to + 1) items
     in
-        first ++ middle ++ item ++ rest
+    first ++ middle ++ item ++ rest
 
 
 update : Msg -> Model -> ( Model, Cmd.Cmd Msg )
@@ -144,12 +145,8 @@ update_ msg model =
         Dropped to ( from, _ ) ->
             { model | items = move model.items from to }
 
-        DnDMsg msg ->
-            { model | draggable = DnD.update msg model.draggable }
-
-
-(=>) =
-    (,)
+        DnDMsg msg_ ->
+            { model | draggable = DnD.update msg_ model.draggable }
 
 
 view : Model -> Html Msg
@@ -158,58 +155,58 @@ view model =
         itemValues =
             model.items |> List.map .value
     in
-        div
-            [ style
-                [ "width" => "100%"
-                , "height" => "25px"
-                ]
-            ]
-            ((model.items
-                |> List.indexedMap
-                    (\index item ->
-                        [ droppable index model.draggable
-                        , dnd.draggable ( index, item.repr ) [] [ box "solid" item.repr ]
-                        ]
-                    )
-                |> List.concat
-             )
-                ++ [ droppable (List.length model.items)
-                        model.draggable
-                   , br [] []
-                   , p []
-                        [ text <|
-                            if itemValues == (itemValues |> List.sort) then
-                                "The list is sorted"
-                            else
-                                "The list is messed"
-                        ]
-                   , DnD.dragged
-                        model.draggable
-                        (box "dotted" << Tuple.second)
-                   ]
-            )
+    div
+        [ (\( a, b ) -> style a b) ( "width", "100%" )
+        , (\( a, b ) -> style a b) ( "height", "25px" )
+        ]
+        ((model.items
+            |> List.indexedMap
+                (\index item ->
+                    [ droppable index model.draggable
+                    , dnd.draggable ( index, item.repr ) [] [ box "solid" item.repr ]
+                    ]
+                )
+            |> List.concat
+         )
+            ++ [ droppable (List.length model.items)
+                    model.draggable
+               , br [] []
+               , p []
+                    [ text <|
+                        if itemValues == (itemValues |> List.sort) then
+                            "The list is sorted"
+
+                        else
+                            "The list is messed"
+                    ]
+               , DnD.dragged
+                    model.draggable
+                    (box "dotted" << Tuple.second)
+               ]
+        )
 
 
 droppable index draggableModel =
     dnd.droppable
         index
-        [ style
-            [ "width" => "40px"
-            , "height" => "20px"
-            , "float" => "left"
-            , "background-color"
-                => if
-                    case DnD.getDropMeta draggableModel of
-                        Just to ->
-                            to == index
+        [ (\( a, b ) -> style a b) ( "width", "40px" )
+        , (\( a, b ) -> style a b) ( "height", "20px" )
+        , (\( a, b ) -> style a b) ( "float", "left" )
+        , (\( a, b ) -> style a b)
+            ( "background-color"
+            , if
+                case DnD.getDropMeta draggableModel of
+                    Just to ->
+                        to == index
 
-                        _ ->
-                            False
-                   then
-                    "cyan"
-                   else
-                    "white"
-            ]
+                    _ ->
+                        False
+              then
+                "cyan"
+
+              else
+                "white"
+            )
         ]
         [ box "solid" "" ]
 
@@ -217,11 +214,9 @@ droppable index draggableModel =
 box : String -> String -> Html Msg
 box border value =
     div
-        [ style
-            [ "height" => "20px"
-            , "width" => "40px"
-            , "float" => "left"
-            , "border" => ("1px " ++ border ++ " black")
-            ]
+        [ (\( a, b ) -> style a b) ( "height", "20px" )
+        , (\( a, b ) -> style a b) ( "width", "40px" )
+        , (\( a, b ) -> style a b) ( "float", "left" )
+        , (\( a, b ) -> style a b) ( "border", "1px " ++ border ++ " black" )
         ]
         [ text value ]

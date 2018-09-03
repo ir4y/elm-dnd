@@ -1,13 +1,13 @@
-module DragOnly exposing (..)
+module DragOnly exposing (Model, Msg(..), dnd, dragged, init, main, subscriptions, update, view)
 
-import Html
-import Html.Attributes exposing (style)
-import Html exposing (..)
+import Browser
 import DnD
+import Html exposing (..)
+import Html.Attributes exposing (style)
 
 
 main =
-    Html.program
+    Browser.element
         { init = init
         , update = update
         , view = view
@@ -30,8 +30,8 @@ type alias Model =
     DnD.Draggable Never String
 
 
-init : ( Model, Cmd Msg )
-init =
+init : () -> ( Model, Cmd Msg )
+init _ =
     ( dnd.model, Cmd.none )
 
 
