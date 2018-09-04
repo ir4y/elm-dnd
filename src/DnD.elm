@@ -146,16 +146,14 @@ if an object will be dropped at the current area.
 It is useful to check is it area allow you to drop an object and highlight it for example.
 
     dnd.droppable meta
-        [ (\( a, b ) -> style a b)
-            ("background-color"
-                => (case DnD.getDropMeta model.draggable of
-                        Just _ ->
-                            "cyan"
+        [style
+           "background-color"
+               case DnD.getDropMeta model.draggable of
+                   Just _ ->
+                       "cyan"
 
-                        _ ->
-                            "white"
-                   )
-            )
+                   _ ->
+                       "white"
         ]
         []
 
@@ -295,9 +293,6 @@ draggable : (Msg dropMeta dragMeta -> m) -> dragMeta -> List (Html.Attribute m) 
 draggable wrap meta attrs html =
     div
         ([ custom "mousedown"
-            --{ stopPropagation = True
-            --, preventDefault = True
-            --}
             (Json.map2 MousePosition pageX pageY
                 |> Json.map (wrap << DragStart meta)
                 |> Json.map
