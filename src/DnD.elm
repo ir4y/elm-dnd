@@ -322,7 +322,7 @@ droppable wrap dropMeta attrs html =
 
 px : Int -> String
 px number =
-    Debug.toString number ++ "px"
+    String.fromInt number ++ "px"
 
 
 draggedStyle : MousePosition -> List (Html.Attribute m)
